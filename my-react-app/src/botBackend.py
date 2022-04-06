@@ -52,7 +52,7 @@ def RemoveUserFromTable(Username):
     connuri = conn_info.stdout.decode('utf-8').strip()
     conn = psycopg2.connect(connuri)
     cursor = conn.cursor()
-    cursor.execute("DELETE FROME Users WHERE Username = '",Username,"');")
+    cursor.execute("DELETE FROME Users WHERE Username = '",Username,"';")
     conn.commit()
     cursor.close()
     conn.close()
