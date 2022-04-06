@@ -12,12 +12,19 @@ def LoginValidation(Input1, Input2):
     conn = psycopg2.connect(connuri)
     cursor = conn.cursor()
     n = ""
-    n = cursor.execute("SELECT * FROM Users WHERE Username = " + "\'"+ Input1 + "\'" + " AND Password = " + "\'"+ Input2 + "\'" + ";")
-    if n != "":
+    cursor.execute("SELECT * FROM Users WHERE Username = " + "\'"+ Input1 + "\'" + " AND Password = " + "\'"+ Input2 + "\'" + ";")
+    n = cursor.fetchone();
+    #print(n)
+    if type(n) != type(None):
     	print ("Access Granted:" + Input1)
     	return True
+    else:
+    	print("Access Denied: Try again")
     #conn.commit()
     cursor.close()
     conn.close()
 
-LoginValidation("developer1", "T33")
+inputUser = input("Enter username: ")
+inputPass = input("Enter password: ")
+
+LoginValidation(inputUser, inputPass)
