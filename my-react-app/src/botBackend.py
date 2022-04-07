@@ -20,13 +20,9 @@ def LoginValidation(Input1, Input2):
     	print ("Access Granted:" + Input1)
     	return True
     else:
-    	print("Incorrect Infor")
-        return False
+    	print("Incorrect Info")
+    	return False
 
-inputUser = input("Enter username: ")
-inputPass = input("Enter password: ")
-
-LoginValidation(inputUser, inputPass)
 
 ############################### NEEDS TO BE TESTES ##############################
 def EnterUserToTable(Username, Password):
@@ -37,7 +33,7 @@ def EnterUserToTable(Username, Password):
     connuri = conn_info.stdout.decode('utf-8').strip()
     conn = psycopg2.connect(connuri)
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO Users VALUES('",Username,"','",Password,"','Null','Null');")
+    cursor.execute("INSERT INTO Users VALUES(" + "\'"+ Username + "\'," + "\'" + Password + "\'," + '0, 0);')
     conn.commit()
     cursor.close()
     conn.close()
@@ -52,7 +48,7 @@ def RemoveUserFromTable(Username):
     connuri = conn_info.stdout.decode('utf-8').strip()
     conn = psycopg2.connect(connuri)
     cursor = conn.cursor()
-    cursor.execute("DELETE FROME Users WHERE Username = '",Username,"';")
+    cursor.execute("DELETE FROM Users WHERE Username = " + "\'" + Username + "\';")
     conn.commit()
     cursor.close()
     conn.close()
@@ -67,7 +63,7 @@ def UpdateEmail(Username, Email):
     connuri = conn_info.stdout.decode('utf-8').strip()
     conn = psycopg2.connect(connuri)
     cursor = conn.cursor()
-    cursor.execute("UPDATE Users SET Email = '",Email,"' WHERE Username = '",Username,"';")
+    cursor.execute("UPDATE Users SET Email ="  + "\'" + Email  + "\'" + "WHERE Username = "  + "\'" + Username  + "\';")
     conn.commit()
     cursor.close()
     conn.close()
@@ -82,8 +78,14 @@ def UpdatePhone(Username, Phone):
     connuri = conn_info.stdout.decode('utf-8').strip()
     conn = psycopg2.connect(connuri)
     cursor = conn.cursor()
-    cursor.execute("UPDATE Users SET Phone = '",Phone,"' WHERE Username = '",Username,"';")
+    cursor.execute("UPDATE Users SET Phone ="  + "\'" + Phone  + "\'" + "WHERE Username = "  + "\'" + Username  + "\';")
     conn.commit()
     cursor.close()
     conn.close()
     print("Updated User -", Username, " - with Phone -", Phone)
+
+
+inputUser = input()
+#inputPass = input()
+
+RemoveUserFromTable(inputUser)
