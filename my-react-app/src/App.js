@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import ReactDOM from "react-dom";
+// import ReactDOM from "react-dom";
 
 import "./loginStyles.css";
 
@@ -11,12 +11,12 @@ function App() {
   // User Login info
   const database = [
     {
-      username: "user1",
-      password: "pass1"
+      username: "admin",
+      password: "admin"
     },
     {
-      username: "user2",
-      password: "pass2"
+      username: "testuser",
+      password: "testuser"
     }
   ];
 
@@ -40,7 +40,7 @@ function App() {
         // Invalid password
         setErrorMessages({ name: "pass", message: errors.pass });
       } else {
-        setIsSubmitted(true);
+        setIsSubmitted(true)
       }
     } else {
       // Username not found
@@ -77,14 +77,20 @@ function App() {
 
   return (
     <div className="app">
+      <div className="nav-bar">
+      <ul>
+        <li><a href="Home.js">Home</a></li>
+        <li><a href="Home.js">Tracking List</a></li>
+        <li><a href="Home.js">My Account</a></li>
+      </ul> 
+      </div>
       <div className="login-form">
         <div className="title">Sign In</div>
-        {isSubmitted ? <div>User is successfully logged in</div> : renderForm}
+        {/* {renderForm} */}
+        {isSubmitted ? <div>User is successfully logged in and This part of the website is not yet built</div> : renderForm}
       </div>
     </div>
   );
 }
 
-// const rootElement = document.getElementById("root");
-// ReactDOM.render(<App />, rootElement);
 export default App;
