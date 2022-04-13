@@ -1,22 +1,35 @@
-import React, { useState } from "react";
-//import ReactDOM from "react-dom";
-import LoginButton from './components/LoginButton';
-import Navbar from './components/Navbar';
-import LogoutButton from "./components/LogoutButton";
-import ResponsiveAppBar from "./components/ResponsiveAppBar";
+import React from "react";
+import SignInSide from './components/LoginPage';
+import CircularProgress from '@mui/material/CircularProgress';
+import Box from '@mui/material/Box';
+import { useAuth0 } from '@auth0/auth0-react';
+import HomePage from './components/HomePage';
 
 import "./App.css";
 
 function App() {
 
-  return (
-    <div>
-      <ResponsiveAppBar />
-      <Navbar />
-      <LoginButton />
-      <LogoutButton />
-    </div>
-  );
+  const { isAuthenticated, isLoading } = useAuth0();
+
+  if (isLoading) {
+    return (
+    <Box sx={{ top: 0,
+      left: 0,
+      bottom: 0,
+      right: 0,
+      position: 'absolute',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center', }}>
+      <CircularProgress />
+    </Box>)
+  }
+
+  if (isAuthenticated) {
+    return <HomePage />
+  }
+  return <SignInSide /> ;
+  
 }
 
 export default App;

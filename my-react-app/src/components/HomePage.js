@@ -1,8 +1,11 @@
-import React from 'react'
+import React from 'react';
+import ResponsiveAppBar from './ResponsiveAppBar';
 
 const HomePage = () => {
   return (
-    <div>HomePage</div>
+    <div>
+      <ResponsiveAppBar />
+    </div>
   )
 }
 
