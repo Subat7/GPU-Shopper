@@ -11,7 +11,8 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
-import Logo from '../photos/BOTNETLOGO.jpg'
+import Logo from '../photos/BOTNETLOGO.jpg';
+import { useAuth0 } from '@auth0/auth0-react';
 
 const pages = ['Home', 'Tracking List'];
 const settings = ['Profile' ,'Logout'];
@@ -19,7 +20,8 @@ const settings = ['Profile' ,'Logout'];
 const ResponsiveAppBar = () => {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
-  const [selectedUserMenuItem, setSelectedUserMenuItem] = React.useState(null);
+  //const [selectedUserMenuItem, setSelectedUserMenuItem] = React.useState(null);
+  const { logout } = useAuth0();
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -37,12 +39,17 @@ const ResponsiveAppBar = () => {
     console.log("UserMenu Closed");
   };
 
-  const handleMenuClick = (event) => {
-    // if (event.currentTarget.p)
-    console.log(event.currentTarget.children)
-    
-  }
+  const handleProfileClick = (event) => {
+    setAnchorElUser(null);
+    console.log("Profile clicked")
+  };
 
+  const handleLogoutClick = (event) => {
+    setAnchorElUser(null);
+    console.log("Logout clicked");
+    logout();
+  };
+  
   return (
     <AppBar position="static">
       <Container maxWidth="xl">
@@ -135,11 +142,12 @@ const ResponsiveAppBar = () => {
               open={Boolean(anchorElUser)}
               onClose={handleCloseUserMenu}
             >
-              {settings.map((setting) => (
-                <MenuItem key={setting} onClick={handleMenuClick}>
-                  <Typography textAlign="center">{setting}</Typography>
-                </MenuItem>
-              ))}
+              <MenuItem onClick={handleProfileClick}>
+                <Typography textAlign="center">Profile</Typography>
+              </MenuItem>
+              <MenuItem onClick={handleLogoutClick}>
+                <Typography textAlign="center">Logout</Typography>
+              </MenuItem>
             </Menu>
           </Box>
         </Toolbar>
