@@ -15,7 +15,6 @@ import Logo from '../photos/BOTNETLOGO.jpg';
 import { useAuth0 } from '@auth0/auth0-react';
 
 const pages = ['Home', 'Tracking List'];
-const settings = ['Profile' ,'Logout'];
 
 const ResponsiveAppBar = () => {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
