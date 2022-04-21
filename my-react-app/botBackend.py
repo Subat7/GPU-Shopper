@@ -4,6 +4,7 @@ import subprocess
 import os
 from flask import Flask, send_from_directory, request, jsonify
 import json
+import requests
  
 app = Flask(__name__,
            static_url_path='',
@@ -178,9 +179,75 @@ def Searching(Input, TableNames):
     conn.close()
     print("Search Completed")
     return n
-######### DONT TOUCH ##############
+######### API'S ##############
+
+def jprint(obj):
+    # create a formatted string of the Python JSON object
+    text = json.dumps(obj, sort_keys=True, indent=4)
+    print(text)
+
+
+#Request Limit: 20/day
+#Change the URL to retrieve GPU information #WARNING: URL can only be from a listing where GPU is SOLD BY Newegg
+#Provides:
+#SKU
+#Price
+#Soldout -- False or True
+def neweggAPI():
+
+    url = "https://retail-store-product-information.p.rapidapi.com/getproductv2"
+
+    querystring = {"url":"https://www.newegg.com/zotac-geforce-rtx-3060-ti-zt-a30610h-10mlhr/p/N82E16814500518"}
+
+    headers = {
+        "X-RapidAPI-Host": "retail-store-product-information.p.rapidapi.com",
+        "X-RapidAPI-Key": "c921f8d06amsh9d092ba59855fe5p1d3e4ajsn23ea68d6d328"
+    }
+
+    response = requests.request("GET", url, headers=headers, params=querystring)
+
+    jprint(response.json())
+
+
+
+#API KEY: qhqws47nyvgze2mq3qx4jadt
+#Request Limit: 50,000/day and 5/second
+#Provides:
+#Name
+#Availability -- False or True
+#Price
+#SKU
+def bestbuyAPI():
+    url = "https://api.bestbuy.com/v1/products/6439402.json?apiKey=qhqws47nyvgze2mq3qx4jadt&show=sku,name,salePrice,onlineAvailability" #<----- Change SKU to request details for specifc GPU : /products/SKU
+
+    response = requests.request("GET", url)
+
+    jprint(response.json())
+
+
+
+#Request Limit: NONE
+#Change Amazon product key(ASIN) at the end of URL to retrieve GPU info from listing
+#Provides:
+#Pricing ---> if NULL then its out of stock
+#Available Quanity 
+def amazonAPI():
+    url = "https://amazon24.p.rapidapi.com/api/product/B09CLN62M9" #<----Product Key(ASIN)
+
+    querystring = {"country":"US"}
+
+    headers = {
+        "X-RapidAPI-Host": "amazon24.p.rapidapi.com",
+        "X-RapidAPI-Key": "c921f8d06amsh9d092ba59855fe5p1d3e4ajsn23ea68d6d328"
+    }
+
+    response = requests.request("GET", url, headers=headers, params=querystring)
+
+    jprint(response.json()) 
+
 
  
+#neweggAPI()
 if __name__ == '__main__':
     app.run(debug=True)
 
