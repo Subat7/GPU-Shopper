@@ -223,9 +223,8 @@ def print_tracker_list(tracker_list_username):
     connuri = conn_info.stdout.decode('utf-8').strip()
     conn = psycopg2.connect(connuri)
     cursor = conn.cursor()
-    for i in range(api_names):
-        cursor.execute("SELECT * FROM " + tracker_list_username + ";")
-        search_results_print += cursor.fetchall()
+    cursor.execute("SELECT * FROM " + tracker_list_username + ";")
+    search_results_print += cursor.fetchall()
     conn.commit()
     cursor.close()
     conn.close()
