@@ -165,7 +165,7 @@ def DeleteFromAPITable(Table, table_info):
  
 #Serch
 @app.route('/Searching', methods=['POST'])
-def Searching(TableNames):
+def Searching():
     Input1 = ""
     if request.method == 'POST':
         data = json.loads(request.data)
@@ -179,8 +179,8 @@ def Searching(TableNames):
     connuri = conn_info.stdout.decode('utf-8').strip()
     conn = psycopg2.connect(connuri)
     cursor = conn.cursor()
-    for i in range(TableNames):
-        cursor.execute("SELECT * FROM "+TableNames[i]+" WHERE gpu LIKE '%'"+Input1+"'%' OR gpu LIKE '"+Input1+"'%';")
+    for i in range(api_names):
+        cursor.execute("SELECT * FROM "+api_names[i]+" WHERE gpu LIKE '%'"+Input1+"'%' OR gpu LIKE '"+Input1+"'%';")
         search_results += cursor.fetchall()
     conn.commit()
     cursor.close()
@@ -212,12 +212,31 @@ def print_api_results():
     conn.close()
     print("Search Completed")
     return search_results_print
+
+@app.route('/print_tracker_list')
+def print_tracker_list(tracker_list_username):
+    search_results_print = []
+    HEROKU_APP_NAME = "botproject-csce315"
+    import subprocess, psycopg2
+    # connection and execution
+    conn_info = subprocess.run(["heroku", "config:get", "DATABASE_URL", "-a", HEROKU_APP_NAME], stdout = subprocess.PIPE)
+    connuri = conn_info.stdout.decode('utf-8').strip()
+    conn = psycopg2.connect(connuri)
+    cursor = conn.cursor()
+    for i in range(api_names):
+        cursor.execute("SELECT * FROM " + tracker_list_username + ";")
+        search_results_print += cursor.fetchall()
+    conn.commit()
+    cursor.close()
+    conn.close()
+    print("Search Completed")
+    return search_results_print
 ######################call abck to recall api's#################################
 regester = [] # stores all with a stock of > 0
 
 def api_call(INPUT):
     # get n based on input or just get all n's
-    print(""+INPUT)
+    print(""+INPUT) # use input as it is 
     n = [["Asus 3080ti strix - Black","1000.00","1","None"]]
     return n
 
