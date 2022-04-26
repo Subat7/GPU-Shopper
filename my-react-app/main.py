@@ -5,8 +5,11 @@ import os
 from flask import Flask, send_from_directory, request, jsonify
 import json
 import requests
+import smtplib
+from email.message import EmailMessage
  
 api_names = ["neweggapi","bestbuyapi","amazonapi"]
+list_of_users = ['developer1']
 
 app = Flask(__name__,
            static_url_path='',
@@ -238,19 +241,89 @@ def api_call(INPUT):
     n = [["Asus 3080ti strix - Black","1000.00","1","None"]]
     return n
 
+
+def herokuExecute(command):
+        ## access table and return users table list[tuple[4], tuple [4]]
+        HEROKU_APP_NAME = "botproject-csce315"
+        # connection and execution
+        conn_info = subprocess.run(["heroku", "config:get", "DATABASE_URL", "-a", HEROKU_APP_NAME], stdout = subprocess.PIPE)
+        connuri = conn_info.stdout.decode('utf-8').strip()
+        conn = psycopg2.connect(connuri)
+        cursor = conn.cursor()
+
+
+        cursor.execute(command)
+
+        listData = cursor.fetchall()
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return listData
+
+
+
+def email_send(Username, Info):
+#BotNetGPUs@gmail.com Email Info
+#Password: BotNetisCool1234
+    EMAIL_ADDRESS = 'BotNetGPUs@gmail.com'
+    EMAIL_PASSWORD = 'BotNetisCool1234'
+    # a list of tuple quadrapairs
+    Information_parsed = "Dear " + Username + ", \n \t These GPU's are currently in-stock for a limited time!"
+    for I in range(len(Info)):
+        #Information_parsed += "Name: \n" + Info[I][0] + "Price: \n" + Info[I][1]+" URL: \n" + Info[I][3] + " \n" 
+
+        Information_parsed += "Hello this is BotNet" + Info 
+# me == the sender's email address
+# you == the recipient's email address
+    msg = EmailMessage()
+    msg['Subject'] = "Bot Net GPUS Notification"
+    msg['From'] = EMAIL_ADDRESS
+    msg['To'] = Username + '@gmail.com'
+    msg.set_content(Information_parsed)
+
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+        smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+
+        smtp.send_message(msg)
+        print("email sent")
+        smtp.quit()
+
+
 @app.route('/email_list')
 def email_list(regester):
+    # called in the main call frame
+    for i in list_of_users:
+        info = []
+        Username = i
 
-    return regester
-    
+        strCommand = "Select * From " + Username +";"
+        Tracking_List = herokuExecute(strCommand)
+
+        print(i)
+        ## access regester and return regester table list[strings]
+        for j in range(len(Tracking_List)):
+            for z in range(len(regester)):
+                #[1,2,3,4,1,2,3,4,1,2,3,4]
+                #0,4,8, ENDS
+                if((z*4) >= len(regester)):
+                    print("No matches")
+                    break
+                elif(Tracking_List[j][0] == regester[0+z*4]):
+                    # send email here
+                    info += Tracking_List[j]
+                    print("added info")
+        #email_send(Username,info)
     #Might wanna do this in the main call frame...
+
 
 def main_call_frame():
     #O(n^2) longest funciton in the program
     print("API LIST CALLED" + api_names[0] + api_names[1] + api_names[2])
     regester = [] # stores all with a stock of > 0
     for i in range(1):
-        print(api_names[i])
+        #print(api_names[i])
         list_of_gpus = print_api_results()
         #list_of_gpus = api_call(api_names[i]) # call all api's (DAVID) def api_call -> list of gpu's with info in list of lists [[1,2,3,4],[1.,2.,3.,4.],[x1,x2,x3,x4]]
     # delete from tables if it is there]
@@ -271,7 +344,7 @@ def main_call_frame():
 
             if(int(list_of_gpus[j][2]) > 0):
                 regester += list_of_gpus[j]
-            email_list(regester) 
+            ##email_list(regester) 
 
     return regester         
     # if any stock are at a values other than 0 send the reminder
@@ -342,8 +415,7 @@ def amazonAPI():
 
     jprint(response.json()) 
 
-listGpu = main_call_frame()
-print(listGpu)
+#email_send("daviddk226", "1234")
  
 #neweggAPI()
 # if __name__ == '__main__':
