@@ -6,7 +6,7 @@ from flask import Flask, send_from_directory, request, jsonify
 import json
 import requests
  
-api_names = ["neweggapi","bustbuyapi","amazonapi"]
+api_names = ["neweggapi","bestbuyapi","amazonapi"]
 
 app = Flask(__name__,
            static_url_path='',
@@ -165,11 +165,11 @@ def DeleteFromAPITable(Table, table_info):
  
 #Serch
 @app.route('/Searching', methods=['POST'])
-def Searching():
-    Input1 = ""
-    if request.method == 'POST':
-        data = json.loads(request.data)
-        Input1 = data['Search']
+def Searching(Input1):
+    #Input1 = ""
+    #if request.method == 'POST':
+    #    data = json.loads(request.data)
+    #    Input1 = data['Search']
     # a part or complete match
     search_results = []
     HEROKU_APP_NAME = "botproject-csce315"
@@ -179,15 +179,14 @@ def Searching():
     connuri = conn_info.stdout.decode('utf-8').strip()
     conn = psycopg2.connect(connuri)
     cursor = conn.cursor()
-    for i in range(api_names):
-        cursor.execute("SELECT * FROM "+api_names[i]+" WHERE gpu LIKE '%'"+Input1+"'%' OR gpu LIKE '"+Input1+"'%';")
+    for i in range(len(api_names)):
+        cursor.execute("SELECT * FROM "+api_names[i]+" WHERE gpu LIKE '%"+ Input1 +"%' OR gpu LIKE '"+ Input1 +"%';") 
         search_results += cursor.fetchall()
     conn.commit()
     cursor.close()
     conn.close()
     print("Search Completed")
     return search_results
-######### API'S ##############
 
 def jprint(obj):
     # create a formatted string of the Python JSON object
@@ -204,7 +203,7 @@ def print_api_results():
     connuri = conn_info.stdout.decode('utf-8').strip()
     conn = psycopg2.connect(connuri)
     cursor = conn.cursor()
-    for i in range(api_names):
+    for i in range(len(api_names)):
         cursor.execute("SELECT * FROM " + api_names[i] + ";")
         search_results_print += cursor.fetchall()
     conn.commit()
@@ -241,39 +240,47 @@ def api_call(INPUT):
 
 @app.route('/email_list')
 def email_list(regester):
+
     return regester
+    
     #Might wanna do this in the main call frame...
 
-def main_call_frame(regester):
+def main_call_frame():
     #O(n^2) longest funciton in the program
     print("API LIST CALLED" + api_names[0] + api_names[1] + api_names[2])
     regester = [] # stores all with a stock of > 0
-    for i in range(api_names):
-        list_of_gpus = api_call(api_names[i]) # call all api's (DAVID) def api_call -> list of gpu's with info in list of lists [[1,2,3,4],[1.,2.,3.,4.],[x1,x2,x3,x4]]
+    for i in range(1):
+        print(api_names[i])
+        list_of_gpus = print_api_results()
+        #list_of_gpus = api_call(api_names[i]) # call all api's (DAVID) def api_call -> list of gpu's with info in list of lists [[1,2,3,4],[1.,2.,3.,4.],[x1,x2,x3,x4]]
     # delete from tables if it is there]
     # add to tables for the entire call
-        for j in range(list_of_gpus):
+        for j in range(len(list_of_gpus)):
             # list_of_gpus = [[],[],[]]
             #list_of_gpus[j][0] # [[1],[],[],[]] -> [1] -> 1 # is name
             #list_of_gpus[j][1] # is price
             #list_of_gpus[j][2] # is stock
             #list_of_gpus[j][3] # is url
-            try: 
-                #test the delete function seperately as this is very important
-                DeleteFromAPITable(api_names[i], list_of_gpus[j]) # will error so if it does that means it doesnt exist thus continue
-            except Exception:
-                pass
-            InsertIntoAPITable(api_names[i], list_of_gpus[j])
+
+            # try: 
+            #     #test the delete function seperately as this is very important
+            #     ##DeleteFromAPITable(api_names[i], list_of_gpus[j]) # will error so if it does that means it doesnt exist thus continue
+            # except Exception:
+            #     pass
+            ##InsertIntoAPITable(api_names[i], list_of_gpus[j])
+
             if(int(list_of_gpus[j][2]) > 0):
                 regester += list_of_gpus[j]
+            email_list(regester) 
+
     return regester         
     # if any stock are at a values other than 0 send the reminder
 
 ## this code makes the call go out once every day    
-from apscheduler.schedulers.blocking import BlockingScheduler
-scheduler = BlockingScheduler()
-scheduler.add_job(main_call_frame(['']), 'interval', hours=24)
-scheduler.start()
+# from apscheduler.schedulers.blocking import BlockingScheduler
+# scheduler = BlockingScheduler()
+# scheduler.add_job(main_call_frame(['']), 'interval', hours=24)
+# scheduler.start()
 
 
 
@@ -335,7 +342,8 @@ def amazonAPI():
 
     jprint(response.json()) 
 
-
+listGpu = main_call_frame()
+print(listGpu)
  
 #neweggAPI()
 # if __name__ == '__main__':
