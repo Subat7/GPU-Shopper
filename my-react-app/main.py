@@ -156,16 +156,29 @@ def DeleteAPITable(Name):
 #isert into location
 @app.route('/InsertIntoAPITable')
 def InsertIntoAPITable(Table, table_info):
+    print(Table)
+    print(table_info[0])
     HerokuExecutionSQL("INSERT INTO " + Table + " VALUES ("+ "\'" + table_info[0]  + "\'"  + ", "+"\'" + table_info[1]  + "\'"+","+"\'" + table_info[2]  + "\'"+", "+"\'" + table_info[3]  + "\'"+");")
     print("Updated ", Table, "'s table with gpu - ", table_info[0],";")
  
 #delete from location
 @app.route('/DeleteFromAPITable')
 def DeleteFromAPITable(Table, table_info):
-    HerokuExecutionSQL("DELETE FROM TABLE " + Table + " WHERE Gpu = " + "\'" + table_info[0] + "\'" + " AND Price = "+ "\'" + table_info[1] + "\'" + " AND Stock = "+ "\'" + table_info[2] + "\'" + " AND URL = "+ "\'" + table_info[3] + "\'" +" ;")
+    HerokuExecutionSQL("DELETE FROM TABLE " + Table + " WHERE gpu = " + "\'" + table_info[0] + "\'" + ";")
     print("deleted from ", Table, "'s table with gpu - ", table_info[0],";")
 #cycling
- 
+
+#add in a new user/call every time 
+@app.route('/update_users') 
+def update_users(UserEmail):
+    if UserEmail in list_of_users:
+        print("Already in the database")
+        return False
+    else:
+        print("Entered new user" + UserEmail)
+        list_of_users.add(UserEmail)
+    return True
+
 #Serch
 @app.route('/Searching', methods=['POST'])
 def Searching(Input1):
@@ -235,10 +248,14 @@ def print_tracker_list(tracker_list_username):
 ######################call abck to recall api's#################################
 regester = [] # stores all with a stock of > 0
 
-def api_call(INPUT):
+def api_call():
     # get n based on input or just get all n's
-    print(""+INPUT) # use input as it is 
-    n = [["Asus 3080ti strix - Black","1000.00","1","None"]]
+    a = amazonAPI() # [[1,2,3,4,5]]
+    b = neweggAPI()
+    c = bestbuyAPI()
+    # -> one 2d list
+    n = a + b + c
+    print(n)
     return n
 
 
@@ -250,18 +267,12 @@ def herokuExecute(command):
         connuri = conn_info.stdout.decode('utf-8').strip()
         conn = psycopg2.connect(connuri)
         cursor = conn.cursor()
-
-
         cursor.execute(command)
-
         listData = cursor.fetchall()
-
         conn.commit()
         cursor.close()
         conn.close()
-
         return listData
-
 
 
 def email_send(Username, Info):
@@ -322,30 +333,40 @@ def main_call_frame():
     #O(n^2) longest funciton in the program
     print("API LIST CALLED" + api_names[0] + api_names[1] + api_names[2])
     regester = [] # stores all with a stock of > 0
-    for i in range(1):
-        #print(api_names[i])
-        list_of_gpus = print_api_results()
-        #list_of_gpus = api_call(api_names[i]) # call all api's (DAVID) def api_call -> list of gpu's with info in list of lists [[1,2,3,4],[1.,2.,3.,4.],[x1,x2,x3,x4]]
-    # delete from tables if it is there]
-    # add to tables for the entire call
-        for j in range(len(list_of_gpus)):
-            # list_of_gpus = [[],[],[]]
-            #list_of_gpus[j][0] # [[1],[],[],[]] -> [1] -> 1 # is name
-            #list_of_gpus[j][1] # is price
-            #list_of_gpus[j][2] # is stock
-            #list_of_gpus[j][3] # is url
-
-            # try: 
-            #     #test the delete function seperately as this is very important
-            #     ##DeleteFromAPITable(api_names[i], list_of_gpus[j]) # will error so if it does that means it doesnt exist thus continue
-            # except Exception:
-            #     pass
-            ##InsertIntoAPITable(api_names[i], list_of_gpus[j])
-
-            if(int(list_of_gpus[j][2]) > 0):
-                regester += list_of_gpus[j]
-            ##email_list(regester) 
-
+    a = amazonAPI() # [[1,2,3,4,5]]
+    b = neweggAPI()
+    c = bestbuyAPI()
+    for i in range(len(a)):
+        name = "amazonapi"
+        #try: 
+            #test the delete function seperately as this is very important
+        DeleteFromAPITable(name, a[i]) # will error so if it does that means it doesnt exist thus continue
+        #except Exception:
+        #    pass
+        print(a[i])
+        InsertIntoAPITable(name, a[i])
+        if(int(a[i][2]) > 0):
+            regester += a[i]
+    for i in range(len(b)):
+        name = "neweggapi"
+        try: 
+            #test the delete function seperately as this is very important
+            DeleteFromAPITable(name, b[i]) # will error so if it does that means it doesnt exist thus continue
+        except Exception:
+            pass
+        InsertIntoAPITable(name, b[i])
+        if(int(b[i][2]) > 0):
+            regester += b[i]
+    for i in range(len(c)):
+        name = "bestbuyapi"
+        try: 
+            #test the delete function seperately as this is very important
+            DeleteFromAPITable(name, c[i]) # will error so if it does that means it doesnt exist thus continue
+        except Exception:
+            pass
+        InsertIntoAPITable(name, c[i])
+        if(int(c[i][2]) > 0):
+            regester += c[i]  
     return regester         
     # if any stock are at a values other than 0 send the reminder
 
@@ -376,7 +397,10 @@ def neweggAPI():
 
     response = requests.request("GET", url, headers=headers, params=querystring)
 
-    jprint(response.json())
+    #jprint(response.json())
+
+    n = [['GIGABYTE Eagle RTX 3070 Ti','699.99','1','Normal_URL', 'Image_URL']]
+    return n
 
 
 
@@ -392,7 +416,10 @@ def bestbuyAPI():
 
     response = requests.request("GET", url)
 
-    jprint(response.json())
+    #jprint(response.json())
+
+    n = [['RTX 3060ti Founders Edition - NVIDIA','399.99','0','Normal_URL', 'Image_URL']]
+    return n
 
 
 
@@ -413,7 +440,10 @@ def amazonAPI():
 
     response = requests.request("GET", url, headers=headers, params=querystring)
 
-    jprint(response.json()) 
+    #jprint(response.json()) 
+
+    n = [['ZOTAC GAMING GetForce RTX 3060','529.00','1','Normal_URL', 'Image_URL']]
+    return n
 
 #email_send("daviddk226", "1234")
  
@@ -422,7 +452,7 @@ def amazonAPI():
 #     #app.run(debug=True)
 #     app.run()
 
-
+main_call_frame()
 
 
 
