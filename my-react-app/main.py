@@ -7,6 +7,7 @@ import json
 import requests
 import smtplib
 from email.message import EmailMessage
+from bs4 import BeautifulSoup
  
 api_names = ["neweggapi","bestbuyapi","amazonapi"]
 list_of_users = ['developer1']
@@ -158,13 +159,13 @@ def DeleteAPITable(Name):
 def InsertIntoAPITable(Table, table_info):
     print(Table)
     print(table_info[0])
-    HerokuExecutionSQL("INSERT INTO " + Table + " VALUES ("+ "\'" + table_info[0]  + "\'"  + ", "+"\'" + table_info[1]  + "\'"+","+"\'" + table_info[2]  + "\'"+", "+"\'" + table_info[3]  + "\'"+");")
+    HerokuExecutionSQL("INSERT INTO " + Table + " VALUES ("+ "\'" + table_info[0]  + "\'"  + ", "+"\'" + table_info[1]  + "\'"+", "+"\'" + table_info[2]  + "\'"+", "+"\'" + table_info[3]  + "\'" + ", "+ "\'" + table_info[4] + "\'" + ");")
     print("Updated ", Table, "'s table with gpu - ", table_info[0],";")
  
 #delete from location
 @app.route('/DeleteFromAPITable')
 def DeleteFromAPITable(Table, table_info):
-    HerokuExecutionSQL("DELETE FROM TABLE " + Table + " WHERE gpu = " + "\'" + table_info[0] + "\'" + ";")
+    HerokuExecutionSQL("DELETE FROM " + Table + " WHERE gpu = " + "\'" + table_info[0] + "\'" + ";")
     print("deleted from ", Table, "'s table with gpu - ", table_info[0],";")
 #cycling
 
@@ -331,7 +332,7 @@ def email_list(regester):
 
 def main_call_frame():
     #O(n^2) longest funciton in the program
-    print("API LIST CALLED" + api_names[0] + api_names[1] + api_names[2])
+    print("API LIST CALLED " + api_names[0] + " " + api_names[1] + " " + api_names[2])
     regester = [] # stores all with a stock of > 0
     a = amazonAPI() # [[1,2,3,4,5]]
     b = neweggAPI()
@@ -347,6 +348,7 @@ def main_call_frame():
         InsertIntoAPITable(name, a[i])
         if(int(a[i][2]) > 0):
             regester += a[i]
+
     for i in range(len(b)):
         name = "neweggapi"
         try: 
@@ -357,6 +359,7 @@ def main_call_frame():
         InsertIntoAPITable(name, b[i])
         if(int(b[i][2]) > 0):
             regester += b[i]
+
     for i in range(len(c)):
         name = "bestbuyapi"
         try: 
@@ -367,6 +370,7 @@ def main_call_frame():
         InsertIntoAPITable(name, c[i])
         if(int(c[i][2]) > 0):
             regester += c[i]  
+
     return regester         
     # if any stock are at a values other than 0 send the reminder
 
@@ -375,6 +379,43 @@ def main_call_frame():
 # scheduler = BlockingScheduler()
 # scheduler.add_job(main_call_frame(['']), 'interval', hours=24)
 # scheduler.start()
+
+
+
+
+
+
+def neweggScraper():
+
+    urls = "https://www.newegg.com/asus-geforce-rtx-3070-ti-tuf-rtx3070ti-o8g-gaming/p/N82E16814126512?Item=N82E16814126512&Description=RTX%20CARD&cm_re=RTX_CARD-_-14-126-512-_-Product"
+
+    response = requests.get(urls).text
+
+
+    pageData = BeautifulSoup(response, "html.parser")
+    nameGPU = pageData.find("h1", {"class": "product-title"}).text
+    priceGPU = pageData.find("li", {"class": "price-current"}).text
+    urlGPU = urls
+    imageGPU = pageData.find("img", {"class": "product-view-img-original", "src" : True})['src']
+    stockGPU = pageData.find("div", {"class": "product-inventory"}).text
+
+    strResponse = {'name': nameGPU, 'price': priceGPU, 'url': urlGPU, 'image': imageGPU, 'stock': stockGPU}
+
+    nameGPU = strResponse['name'] #name key used to retrive GPU name from response dictionary
+    priceGPU = str(strResponse['price'])#price key used to retrive GPU price from response dictionary
+    urlGPU = strResponse['url']#url key used to retrive GPU url listing from response dictionary
+    imageGPU = strResponse['image']#image key used to retrive GPU image url from response dictionary
+
+
+    if strResponse['stock'] != ' OUT OF STOCK.': # checking GPU stock state from response
+        stockGPU = '1' #if in stock set stock to 1 
+    else:
+        stockGPU = '0' #if not in stock set stock to 0
+
+    dataList = [[nameGPU, priceGPU, stockGPU, urlGPU, imageGPU]]
+
+    print(dataList)
+
 
 
 
@@ -399,12 +440,21 @@ def neweggAPI():
 
     strResponse = response.json()
 
-    #print(strResponse)
+    nameGPU = strResponse['name'] #name key used to retrive GPU name from response dictionary
+    priceGPU = str(strResponse['price'])#price key used to retrive GPU price from response dictionary
+    urlGPU = strResponse['link']#link key used to retrive GPU url listing from response dictionary
+    imageGPU = strResponse['image']#image key used to retrive GPU image url from response dictionary
 
+    if strResponse['soldout'] == False: #soldout key used to retrive GPU stock from response dictionary
+        stockGPU = '1' #if in stock set stock to 1 
+    else:
+        stockGPU = '0' #if not in stock set stock to 0
 
+    dataList = [[nameGPU, priceGPU, stockGPU, urlGPU, imageGPU]]
+    print(dataList)
 
-    #n = [['GIGABYTE Eagle RTX 3070 Ti','699.99','1','Normal_URL', 'Image_URL']]
-    #return n
+    return dataList
+
 
 
 
@@ -482,7 +532,8 @@ def amazonAPI():
 
 
 #email_send("daviddk226", "1234")
-amazonAPI()
+#neweggScraper()
+main_call_frame()
 
 
 
