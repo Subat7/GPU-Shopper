@@ -397,10 +397,14 @@ def neweggAPI():
 
     response = requests.request("GET", url, headers=headers, params=querystring)
 
-    #jprint(response.json())
+    strResponse = response.json()
 
-    n = [['GIGABYTE Eagle RTX 3070 Ti','699.99','1','Normal_URL', 'Image_URL']]
-    return n
+    #print(strResponse)
+
+
+
+    #n = [['GIGABYTE Eagle RTX 3070 Ti','699.99','1','Normal_URL', 'Image_URL']]
+    #return n
 
 
 
@@ -412,14 +416,28 @@ def neweggAPI():
 #Price
 #SKU
 def bestbuyAPI():
-    url = "https://api.bestbuy.com/v1/products/6439402.json?apiKey=qhqws47nyvgze2mq3qx4jadt&show=sku,name,salePrice,onlineAvailability" #<----- Change SKU to request details for specifc GPU : /products/SKU
+    url = "https://api.bestbuy.com/v1/products/6439402.json?apiKey=qhqws47nyvgze2mq3qx4jadt&show=sku,name,salePrice,onlineAvailability,image,url" #<----- Change SKU to request details for specifc GPU : /products/SKU
 
     response = requests.request("GET", url)
 
     #jprint(response.json())
 
-    n = [['RTX 3060ti Founders Edition - NVIDIA','399.99','0','Normal_URL', 'Image_URL']]
-    return n
+    strResponse = response.json()
+
+    nameGPU = strResponse['name'] #name key used to retrive GPU name from response dictionary
+    priceGPU = str(strResponse['salePrice'])#salePrice key used to retrive GPU price from response dictionary
+    urlGPU = strResponse['url']#url key used to retrive GPU url listing from response dictionary
+    imageGPU = strResponse['image']#image key used to retrive GPU image url from response dictionary
+
+    if strResponse['onlineAvailability'] == True: #onlineAvailability key used to retrive GPU stock from response dictionary
+        stockGPU = '1' #if in stock set stock to 1 
+    else:
+        stockGPU = '0' #if not in stock set stock to 0
+
+    dataList = [[nameGPU, priceGPU, stockGPU, urlGPU, imageGPU]]
+    print(dataList)
+
+    return dataList
 
 
 
@@ -442,17 +460,29 @@ def amazonAPI():
 
     #jprint(response.json()) 
 
-    n = [['ZOTAC GAMING GetForce RTX 3060','529.00','1','Normal_URL', 'Image_URL']]
-    return n
+    strResponse = response.json() #Response is retrieved as json which within python is made a Dictionary data type=
+
+    print(strResponse['product_title'])
+
+    nameGPU = strResponse['product_title']#product_title key used to retrive GPU name from response dictionary
+    priceGPU = str(strResponse['currency'])#currency key used to retrive GPU price from response dictionary
+    urlGPU = strResponse['product_detail_url']#product_detail_url key used to retrive GPU url listing from response dictionary
+    imageGPU = strResponse['product_main_image_url']#product_main_image_url key used to retrive GPU image url from response dictionary
+
+    if strResponse['available_quantity'] != 0: #availabe_quanity key used to retrive GPU stock from response dictionary
+        stockGPU = '1' #if in stock set stock to 1 
+    else:
+        stockGPU = '0' #if not in stock set stock to 0
+
+    dataList = [[nameGPU, priceGPU, stockGPU, urlGPU, imageGPU]]
+    print(dataList)
+
+    return dataList
+
+
 
 #email_send("daviddk226", "1234")
- 
-#neweggAPI()
-# if __name__ == '__main__':
-#     #app.run(debug=True)
-#     app.run()
-
-main_call_frame()
+amazonAPI()
 
 
 
