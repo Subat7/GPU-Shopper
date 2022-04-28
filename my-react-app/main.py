@@ -159,7 +159,7 @@ def DeleteAPITable(Name):
 def InsertIntoAPITable(Table, table_info):
     print(Table)
     print(table_info)
-    HerokuExecutionSQL("INSERT INTO " + Table + " VALUES ("+ "\'" + table_info[0]  + "\'"  + ", "+"\'" + table_info[1]  + "\'"+", "+"\'" + table_info[2]  + "\'"+", "+"\'" + table_info[3]  + "\'" + ", "+ "\'" + table_info[4] + "\'" + ");")
+    HerokuExecutionSQL("INSERT INTO " + Table + " VALUES ("+ "\'" + table_info[0]  + "\'"  + ", "+"\'" + table_info[1]  + "\'"+", "+"\'" + table_info[2]  + "\'"+", "+"\'" + table_info[3]  + "\'" + ", "+ "\'" + table_info[4] + "\'" + ", "+ "\'" + table_info[5] + "\'" + ");")
     print("Updated ", Table, "'s table with gpu - ", table_info[0],";")
  
 #delete from location
@@ -249,18 +249,9 @@ def print_tracker_list(tracker_list_username):
 ######################call abck to recall api's#################################
 regester = [] # stores all with a stock of > 0
 
-def api_call():
-    # get n based on input or just get all n's
-    a = amazonAPI() # [[1,2,3,4,5]]
-    b = neweggAPI()
-    c = bestbuyAPI()
-    # -> one 2d list
-    n = a + b + c
-    print(n)
-    return n
 
 
-def herokuExecute(command):
+def herokuRetrieveData(command):
         ## access table and return users table list[tuple[4], tuple [4]]
         HEROKU_APP_NAME = "botproject-csce315"
         # connection and execution
@@ -330,48 +321,105 @@ def email_list(regester):
     #Might wanna do this in the main call frame...
 
 
+def apiUpdateStock(apiTable):
+
+    apiData = herokuRetrieveData("Select * FROM " + apiTable + ";")
+    inStockRegister = [];
+
+    for i in apiData:
+        if apiTable == 'bestbuyapi':
+            sku = i[5]
+            stock = i[2]
+            newData = bestbuyAPI(sku)
+            updatedStock = newData[2]
+            
+            if stock != updatedStock:
+                HerokuExecutionSQL("UPDATE " + apiTable + " SET stock = " + '\'' + updatedStock + '\'' + " WHERE sku = " + '\'' + sku + '\''+ ";")
+
+            if updatedStock == '1':
+                inStockRegister += newData
+
+
+        elif apiTable == 'neweggapi':
+            url = i[3]
+            itemNum = i[5]
+            stock = i[2]
+            newData = neweggCall(url)
+            updatedStock = newData[2]
+            
+            if stock != updatedStock:
+                HerokuExecutionSQL("UPDATE " + apiTable + " SET stock = " + '\'' + updatedStock + '\'' + " WHERE item_number = " + '\'' + itemNum + '\''+ ";")
+
+            if updatedStock == '1':
+                inStockRegister += newData
+
+        elif apiTable == 'amazonapi':
+            asin = i[5]
+            stock = i[2]
+            newData = amazonAPI(asin)
+            updatedStock = newData[2]
+            
+            if stock != updatedStock:
+                HerokuExecutionSQL("UPDATE " + apiTable + " SET stock = " + '\'' + updatedStock + '\'' + " WHERE asin = " + '\'' + asin + '\''+ ";")
+
+            if updatedStock == '1':
+                inStockRegister += newData
+
+    print(inStockRegister)
+    return inStockRegister
+
+
 def main_call_frame():
     #O(n^2) longest funciton in the program
     print("API LIST CALLED " + api_names[0] + " " + api_names[1] + " " + api_names[2])
-    regester = [] # stores all with a stock of > 0
-    a = amazonAPI() # [[1,2,3,4,5]]
-    b = neweggAPI()
-    c = bestbuyAPI()
-    for i in range(len(a)):
-        name = "amazonapi"
-        #try: 
-            #test the delete function seperately as this is very important
-        DeleteFromAPITable(name, a[i]) # will error so if it does that means it doesnt exist thus continue
-        #except Exception:
-        #    pass
-        print(a[i])
-        InsertIntoAPITable(name, a[i])
-        if(int(a[i][2]) > 0):
-            regester += a[i]
+    register = [] # stores all with a stock of > 0
 
-    for i in range(len(b)):
-        name = "neweggapi"
-        try: 
-            #test the delete function seperately as this is very important
-            DeleteFromAPITable(name, b[i]) # will error so if it does that means it doesnt exist thus continue
-        except Exception:
-            pass
-        InsertIntoAPITable(name, b[i])
-        if(int(b[i][2]) > 0):
-            regester += b[i]
 
-    for i in range(len(c)):
-        name = "bestbuyapi"
-        try: 
-            #test the delete function seperately as this is very important
-            DeleteFromAPITable(name, c[i]) # will error so if it does that means it doesnt exist thus continue
-        except Exception:
-            pass
-        InsertIntoAPITable(name, c[i])
-        if(int(c[i][2]) > 0):
-            regester += c[i]  
+    #################API's are called to check stock of current GPUs in database#######################
+    register += apiUpdateStock('bestbuyapi');
+    #register += apiUpdateStock('amazonapi'); ### Disabled due to having a 5000/month limit so its not constantly running
+    register += apiUpdateStock('neweggapi');
 
-    return regester         
+    # #################################
+    # for i in range(len(a)):
+    #     name = "amazonapi"
+    #     try: 
+    #         #test the delete function seperately as this is very important
+    #         DeleteFromAPITable(name, a[i]) # will error so if it does that means it doesnt exist thus continue
+    #     except Exception:
+    #         pass
+
+    #     InsertIntoAPITable(name, a[i])
+    #     if(int(a[i][2]) > 0):
+    #         regester += a[i]
+
+    # #################################
+    # for i in range(len(b)):
+    #     name = "neweggapi"
+    #     try: 
+    #         #test the delete function seperately as this is very important
+    #         DeleteFromAPITable(name, b[i]) # will error so if it does that means it doesnt exist thus continue
+    #     except Exception:
+    #         pass
+
+    #     InsertIntoAPITable(name, b[i])
+    #     if(int(b[i][2]) > 0):
+    #         regester += b[i]
+
+    # #################################
+    # for i in range(len(c)):
+    #     name = "bestbuyapi"
+    #     try: 
+    #         #test the delete function seperately as this is very important
+    #         DeleteFromAPITable(name, c[i]) # will error so if it does that means it doesnt exist thus continue
+    #     except Exception:
+    #         pass
+
+    #     InsertIntoAPITable(name, c[i])
+    #     if(int(c[i][2]) > 0):
+    #         regester += c[i]  
+
+    return register         
     # if any stock are at a values other than 0 send the reminder
 
 ## this code makes the call go out once every day    
@@ -399,13 +447,15 @@ def neweggCall(url):
     urlGPU = urls
     imageGPU = pageData.find("img", {"class": "product-view-img-original", "src" : True})['src']
     stockGPU = pageData.find("div", {"class": "product-inventory"}).text
+    itemNumGPU = pageData.find("em").text
 
-    strResponse = {'name': nameGPU, 'price': priceGPU, 'url': urlGPU, 'image': imageGPU, 'stock': stockGPU}
+    strResponse = {'name': nameGPU, 'price': priceGPU, 'url': urlGPU, 'image': imageGPU, 'stock': stockGPU, 'item number': itemNumGPU}
 
     nameGPU = strResponse['name'] #name key used to retrive GPU name from response dictionary
     priceGPU = str(strResponse['price'])#price key used to retrive GPU price from response dictionary
     urlGPU = strResponse['url']#url key used to retrive GPU url listing from response dictionary
     imageGPU = strResponse['image']#image key used to retrive GPU image url from response dictionary
+    itemNumGPU = str(strResponse['item number'])#item number key used to retrive GPU image url from response dictionary
 
 
     if strResponse['stock'] != ' OUT OF STOCK.': # checking GPU stock state from response
@@ -413,7 +463,7 @@ def neweggCall(url):
     else:
         stockGPU = '0' #if not in stock set stock to 0
 
-    dataList = [nameGPU, priceGPU, stockGPU, urlGPU, imageGPU]
+    dataList = [nameGPU, priceGPU, stockGPU, urlGPU, imageGPU, itemNumGPU ]
 
     return dataList
 
@@ -482,13 +532,14 @@ def bestbuyAPI(sku):
     priceGPU = str(strResponse['salePrice'])#salePrice key used to retrive GPU price from response dictionary
     urlGPU = strResponse['url']#url key used to retrive GPU url listing from response dictionary
     imageGPU = strResponse['image']#image key used to retrive GPU image url from response dictionary
+    skuGPU = str(strResponse['sku'])#sku key used to retrive GPU image url from response dictionary
 
     if strResponse['onlineAvailability'] == True: #onlineAvailability key used to retrive GPU stock from response dictionary
         stockGPU = '1' #if in stock set stock to 1 
     else:
         stockGPU = '0' #if not in stock set stock to 0
 
-    dataList = [nameGPU, priceGPU, stockGPU, urlGPU, imageGPU]
+    dataList = [nameGPU, priceGPU, stockGPU, urlGPU, imageGPU, skuGPU]
     #print(dataList)
 
     return dataList
@@ -526,21 +577,21 @@ def amazonAPI(asin):
     
     urlGPU = strResponse['product_detail_url']#product_detail_url key used to retrive GPU url listing from response dictionary
     imageGPU = strResponse['product_main_image_url']#product_main_image_url key used to retrive GPU image url from response dictionary
+    asinGPU = str(strResponse['product_id'])
+
 
     if priceGPU != 'None': #availabe_quanity key used to retrive GPU stock from response dictionary
         stockGPU = '1' #if in stock set stock to 1 
     else:
         stockGPU = '0' #if not in stock set stock to 0
 
-    dataList = [nameGPU, priceGPU, stockGPU, urlGPU, imageGPU]
+    dataList = [nameGPU, priceGPU, stockGPU, urlGPU, imageGPU, asinGPU]
     #print(dataList)
 
     return dataList
 
 
-
-#email_send("daviddk226", "1234")
-
+######################Used to initialize api data tables###############################
 
 ##Insert intial gpu data into bestbuy data table##
 # gpuList = [6496088, 6467840, 6501113, 6475237, 6439402, 6429442, 6465789, 6429440, 6462956, 6429434, 6502626]
@@ -549,7 +600,7 @@ def amazonAPI(asin):
 
 #     gpuData = bestbuyAPI(i);
 
-#     print(gpuData)
+#     #print(gpuData)
 
 #     InsertIntoAPITable("bestbuyapi", gpuData)
 
@@ -559,7 +610,7 @@ def amazonAPI(asin):
 
 # for i in gpuList:
 
-#     #print("Current GPU being retrieved:" + i)
+#     print("Current GPU being retrieved:" + i)
 
 #     gpuData = amazonAPI(i);
 
@@ -588,7 +639,14 @@ def amazonAPI(asin):
 
 #     InsertIntoAPITable("neweggapi", gpuData)
 
+#######################################################################################
 
+#email_send("daviddk226", "1234")
 
+# apiData = herokuRetrieveData("Select * FROM " + "bestbuyapi" + ";")
+# print(len(apiData))
+
+# liststock = main_call_frame()
+# print(liststock)
 
 
