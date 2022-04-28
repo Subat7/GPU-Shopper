@@ -158,7 +158,7 @@ def DeleteAPITable(Name):
 @app.route('/InsertIntoAPITable')
 def InsertIntoAPITable(Table, table_info):
     print(Table)
-    print(table_info[0])
+    print(table_info)
     HerokuExecutionSQL("INSERT INTO " + Table + " VALUES ("+ "\'" + table_info[0]  + "\'"  + ", "+"\'" + table_info[1]  + "\'"+", "+"\'" + table_info[2]  + "\'"+", "+"\'" + table_info[3]  + "\'" + ", "+ "\'" + table_info[4] + "\'" + ");")
     print("Updated ", Table, "'s table with gpu - ", table_info[0],";")
  
@@ -385,12 +385,13 @@ def main_call_frame():
 
 
 
-def neweggScraper():
+def neweggCall(url):
 
-    urls = "https://www.newegg.com/asus-geforce-rtx-3070-ti-tuf-rtx3070ti-o8g-gaming/p/N82E16814126512?Item=N82E16814126512&Description=RTX%20CARD&cm_re=RTX_CARD-_-14-126-512-_-Product"
+    urls = url
 
     response = requests.get(urls).text
 
+    #print(response)
 
     pageData = BeautifulSoup(response, "html.parser")
     nameGPU = pageData.find("h1", {"class": "product-title"}).text
@@ -412,9 +413,11 @@ def neweggScraper():
     else:
         stockGPU = '0' #if not in stock set stock to 0
 
-    dataList = [[nameGPU, priceGPU, stockGPU, urlGPU, imageGPU]]
+    dataList = [nameGPU, priceGPU, stockGPU, urlGPU, imageGPU]
 
-    print(dataList)
+    return dataList
+
+    #print(dataList)
 
 
 
@@ -450,8 +453,8 @@ def neweggAPI():
     else:
         stockGPU = '0' #if not in stock set stock to 0
 
-    dataList = [[nameGPU, priceGPU, stockGPU, urlGPU, imageGPU]]
-    print(dataList)
+    dataList = [nameGPU, priceGPU, stockGPU, urlGPU, imageGPU]
+    #print(dataList)
 
     return dataList
 
@@ -465,8 +468,9 @@ def neweggAPI():
 #Availability -- False or True
 #Price
 #SKU
-def bestbuyAPI():
-    url = "https://api.bestbuy.com/v1/products/6439402.json?apiKey=qhqws47nyvgze2mq3qx4jadt&show=sku,name,salePrice,onlineAvailability,image,url" #<----- Change SKU to request details for specifc GPU : /products/SKU
+def bestbuyAPI(sku):
+
+    url = "https://api.bestbuy.com/v1/products/" + str(sku) + ".json?apiKey=qhqws47nyvgze2mq3qx4jadt&show=sku,name,salePrice,onlineAvailability,image,url" #<----- Change SKU to request details for specifc GPU : /products/SKU
 
     response = requests.request("GET", url)
 
@@ -484,8 +488,8 @@ def bestbuyAPI():
     else:
         stockGPU = '0' #if not in stock set stock to 0
 
-    dataList = [[nameGPU, priceGPU, stockGPU, urlGPU, imageGPU]]
-    print(dataList)
+    dataList = [nameGPU, priceGPU, stockGPU, urlGPU, imageGPU]
+    #print(dataList)
 
     return dataList
 
@@ -496,8 +500,9 @@ def bestbuyAPI():
 #Provides:
 #Pricing ---> if NULL then its out of stock
 #Available Quanity 
-def amazonAPI():
-    url = "https://amazon24.p.rapidapi.com/api/product/B09CLN62M9" #<----Product Key(ASIN)
+def amazonAPI(asin):
+
+    url = "https://amazon24.p.rapidapi.com/api/product/" + asin #<----Product Key(ASIN)
 
     querystring = {"country":"US"}
 
@@ -512,28 +517,77 @@ def amazonAPI():
 
     strResponse = response.json() #Response is retrieved as json which within python is made a Dictionary data type=
 
-    print(strResponse['product_title'])
-
     nameGPU = strResponse['product_title']#product_title key used to retrive GPU name from response dictionary
-    priceGPU = str(strResponse['currency'])#currency key used to retrive GPU price from response dictionary
+
+    if 'app_sale_price' in strResponse:
+        priceGPU = str(strResponse['app_sale_price'])#app_sale_price key used to retrive GPU price from response dictionary
+    else:
+        priceGPU = str(strResponse['price_information']['app_sale_price'])#['price_information']['app_sale_price'] key used to retrive GPU price from response dictionary
+    
     urlGPU = strResponse['product_detail_url']#product_detail_url key used to retrive GPU url listing from response dictionary
     imageGPU = strResponse['product_main_image_url']#product_main_image_url key used to retrive GPU image url from response dictionary
 
-    if strResponse['available_quantity'] != 0: #availabe_quanity key used to retrive GPU stock from response dictionary
+    if priceGPU != 'None': #availabe_quanity key used to retrive GPU stock from response dictionary
         stockGPU = '1' #if in stock set stock to 1 
     else:
         stockGPU = '0' #if not in stock set stock to 0
 
-    dataList = [[nameGPU, priceGPU, stockGPU, urlGPU, imageGPU]]
-    print(dataList)
+    dataList = [nameGPU, priceGPU, stockGPU, urlGPU, imageGPU]
+    #print(dataList)
 
     return dataList
 
 
 
 #email_send("daviddk226", "1234")
-#neweggScraper()
-main_call_frame()
+
+
+##Insert intial gpu data into bestbuy data table##
+# gpuList = [6496088, 6467840, 6501113, 6475237, 6439402, 6429442, 6465789, 6429440, 6462956, 6429434, 6502626]
+
+# for i in gpuList:
+
+#     gpuData = bestbuyAPI(i);
+
+#     print(gpuData)
+
+#     InsertIntoAPITable("bestbuyapi", gpuData)
+
+
+##Insert intial gpu data into amazon data table##
+# gpuList = ["B09QH9NT3V", "B096WM6JFS", "B09CBS8ZF3", "B0971BG25M", "B09719T6FT", "B097J5CZTJ", "B097CMQVF4", "B08KTWVHQP", "B08L8L71SM", "B091MNBNWT", "B08L8LG4M3" ]
+
+# for i in gpuList:
+
+#     #print("Current GPU being retrieved:" + i)
+
+#     gpuData = amazonAPI(i);
+
+
+#     InsertIntoAPITable("amazonapi", gpuData)
+
+
+##Insert intial gpu data into newegg data table##
+# gpuList = ["https://www.newegg.com/asus-geforce-rtx-3070-ti-tuf-rtx3070ti-o8g-gaming/p/N82E16814126512?Item=N82E16814126512&Description=RTX%20CARD&cm_re=RTX_CARD-_-14-126-512-_-Product",
+#     "https://www.newegg.com/msi-geforce-rtx-3070-ti-rtx-3070-ti-suprim-x-8g/p/N82E16814137665?Item=N82E16814137665&Description=rtx%20graphics%20card&cm_re=rtx_graphics%20card-_-14-137-665-_-Product&quicklink=true",
+#     "https://www.newegg.com/gigabyte-geforce-rtx-3060-gv-n3060eagle-oc-12gd/p/N82E16814932434?Item=N82E16814932434&Description=rtx%20graphics%20card&cm_re=rtx_graphics%20card-_-14-932-434-_-Product",
+#     "https://www.newegg.com/evga-geforce-rtx-3050-08g-p5-3553-kr/p/N82E16814487555?Item=N82E16814487555&Description=rtx%20graphics%20card&cm_re=rtx_graphics%20card-_-14-487-555-_-Product",
+#     "https://www.newegg.com/evga-geforce-rtx-3080-12g-p5-4865-kl/p/N82E16814487557?Item=N82E16814487557&Description=rtx%20graphics%20card&cm_re=rtx_graphics%20card-_-14-487-557-_-Product&quicklink=true",
+#     "https://www.newegg.com/asus-geforce-rtx-3060-ph-rtx3060-12g-v2/p/N82E16814126532?Item=N82E16814126532&Description=rtx%20graphics%20card&cm_re=rtx_graphics%20card-_-14-126-532-_-Product",
+#     "https://www.newegg.com/asus-geforce-rtx-3070-ko-rtx3070-o8g-v2-gaming/p/N82E16814126530?Item=N82E16814126530&Description=rtx%20graphics%20card&cm_re=rtx_graphics%20card-_-14-126-530-_-Product",
+#     "https://www.newegg.com/zotac-geforce-rtx-3070-zt-a3070f-10p/p/N82E16814500512?Item=N82E16814500512&Description=rtx%20graphics%20card&cm_re=rtx_graphics%20card-_-14-500-512-_-Product",
+#     "https://www.newegg.com/asus-geforce-rtx-3080-rtx3080-o10g-wht-v2/p/N82E16814126533?Item=N82E16814126533&Description=rtx%20graphics%20card&cm_re=rtx_graphics%20card-_-14-126-533-_-Product",
+#     "https://www.newegg.com/asus-geforce-rtx-3090-ti-tuf-rtx3090ti-o24g-gaming/p/N82E16814126555?Item=N82E16814126555&Description=rtx%20graphics%20card&cm_re=rtx_graphics%20card-_-14-126-555-_-Product",
+#     "https://www.newegg.com/msi-geforce-rtx-3050-rtx-3050-ventus-2x8g/p/N82E16814137715?Item=N82E16814137715&Description=rtx%20graphics%20card&cm_re=rtx_graphics%20card-_-14-137-715-_-Product"]
+
+# for i in gpuList:
+
+#     #print("Current GPU being retrieved:" + i)
+
+#     gpuData = neweggCall(i);
+
+#     InsertIntoAPITable("neweggapi", gpuData)
+
 
 
 
