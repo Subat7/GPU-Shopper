@@ -7,7 +7,13 @@ import json
 import requests
 import smtplib
 from email.message import EmailMessage
+from email.utils import make_msgid
+import mimetypes
 from bs4 import BeautifulSoup
+from email import encoders
+from email.mime.base import MIMEBase
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
  
 api_names = ["neweggapi","bestbuyapi","amazonapi"]
 list_of_users = ['developer1']
@@ -272,19 +278,37 @@ def email_send(Username, Info):
 #Password: BotNetisCool1234
     EMAIL_ADDRESS = 'BotNetGPUs@gmail.com'
     EMAIL_PASSWORD = 'BotNetisCool1234'
-    # a list of tuple quadrapairs
-    Information_parsed = "Dear " + Username + ", \n \t These GPU's are currently in-stock for a limited time!"
-    for I in range(len(Info)):
-        #Information_parsed += "Name: \n" + Info[I][0] + "Price: \n" + Info[I][1]+" URL: \n" + Info[I][3] + " \n" 
 
-        Information_parsed += "Hello this is BotNet" + Info 
-# me == the sender's email address
-# you == the recipient's email address
-    msg = EmailMessage()
+    Intro = "Dear " + Username + "<br>" + "These GPUs are currently in-stock for a limited time!<br>"
+    gpuListingInfo = Info[0] + "<br>" + "Price: " + Info[1] + "<br>" + " URL: " + Info[3] + "<br>" 
+
+
+
+    #msg = EmailMessage()
+    msg = MIMEMultipart("alternative")
     msg['Subject'] = "Bot Net GPUS Notification"
     msg['From'] = EMAIL_ADDRESS
     msg['To'] = Username + '@gmail.com'
-    msg.set_content(Information_parsed)
+    #msg.set_content(Information_parsed)
+
+    # now create a Content-ID for the image
+    image_cid = make_msgid(domain="")
+    # if `domain` argument isn't provided, it will 
+    # use your computer's name
+
+    # set an alternative html body
+    html = """\
+    <html>
+        <body>
+            <p>""" + Intro + """</p>
+            <img  src = """ + Info[4] + """ width: "100" height: "100" >
+            <p>""" + gpuListingInfo + """</p>
+        </body>
+    </html>
+    """
+
+    part = MIMEText(html, "html")
+    msg.attach(part)
 
     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
         smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
@@ -295,7 +319,7 @@ def email_send(Username, Info):
 
 
 @app.route('/email_list')
-def email_list(regester):
+def email_list(register):
     # called in the main call frame
     for i in list_of_users:
         info = []
@@ -546,7 +570,7 @@ def bestbuyAPI(sku):
 
 
 
-#Request Limit: NONE
+#Request Limit: 5,000/Month
 #Change Amazon product key(ASIN) at the end of URL to retrieve GPU info from listing
 #Provides:
 #Pricing ---> if NULL then its out of stock
@@ -641,10 +665,8 @@ def amazonAPI(asin):
 
 #######################################################################################
 
-#email_send("daviddk226", "1234")
-
-# apiData = herokuRetrieveData("Select * FROM " + "bestbuyapi" + ";")
-# print(len(apiData))
+# gpuData = bestbuyAPI(6467840);
+# email_send("daviddk226", gpuData)
 
 # liststock = main_call_frame()
 # print(liststock)
