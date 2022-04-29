@@ -16,7 +16,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
  
 api_names = ["neweggapi","bestbuyapi","amazonapi"]
-list_of_users = ['developer1']
+inStockRegister = []
 
 app = Flask(__name__,
            static_url_path='',
@@ -31,19 +31,6 @@ def serve(path):
         return send_from_directory(app.static_folder, 'index.html')
  
 #local function for connecting via a one input string
-def HerokuExecutionSQL(Input):
-    HEROKU_APP_NAME = "botproject-csce315"
-    import subprocess, psycopg2
-    # connection and execution
-    conn_info = subprocess.run(["heroku", "config:get", "DATABASE_URL", "-a", HEROKU_APP_NAME], stdout = subprocess.PIPE)
-    connuri = conn_info.stdout.decode('utf-8').strip()
-    conn = psycopg2.connect(connuri)
-    cursor = conn.cursor()
-    cursor.execute(Input)
-    conn.commit()
-    cursor.close()
-    conn.close()
- 
 @app.route('/LoginValidation',methods=['POST'])
 def LoginValidation():
     userName = ""
@@ -211,11 +198,8 @@ def Searching(Input1):
     print("Search Completed")
     return search_results
 
-def jprint(obj):
-    # create a formatted string of the Python JSON object
-    text = json.dumps(obj, sort_keys=True, indent=4)
-    print(text)
-############################################################################### print function ## fixed
+############################### Print Functions #######################################
+
 @app.route('/print_api_results')
 def print_api_results():
     search_results_print = []
@@ -252,10 +236,28 @@ def print_tracker_list(tracker_list_username):
     conn.close()
     print("Search Completed")
     return search_results_print
-######################call abck to recall api's#################################
-regester = [] # stores all with a stock of > 0
+
+def jprint(obj):
+    # create a formatted string of the Python JSON object
+    text = json.dumps(obj, sort_keys=True, indent=4)
+    print(text)
 
 
+
+############################### Heroku SQL Command Calls ##############################
+
+def HerokuExecutionSQL(Input):
+    HEROKU_APP_NAME = "botproject-csce315"
+    import subprocess, psycopg2
+    # connection and execution
+    conn_info = subprocess.run(["heroku", "config:get", "DATABASE_URL", "-a", HEROKU_APP_NAME], stdout = subprocess.PIPE)
+    connuri = conn_info.stdout.decode('utf-8').strip()
+    conn = psycopg2.connect(connuri)
+    cursor = conn.cursor()
+    cursor.execute(Input)
+    conn.commit()
+    cursor.close()
+    conn.close()
 
 def herokuRetrieveData(command):
         ## access table and return users table list[tuple[4], tuple [4]]
@@ -272,6 +274,8 @@ def herokuRetrieveData(command):
         conn.close()
         return listData
 
+
+############################### Email and Tracking List ################################
 
 def email_send(Username, Info):
 #BotNetGPUs@gmail.com Email Info
@@ -317,7 +321,10 @@ def email_send(Username, Info):
         print("email sent")
         smtp.quit()
 
-
+######## LEFT TO DO ############
+#Automize the cross checking user tracking lists with in-stock GPUs
+#to then send corresponding emails to those user
+ 
 @app.route('/email_list')
 def email_list(register):
     # called in the main call frame
@@ -344,6 +351,12 @@ def email_list(register):
         #email_send(Username,info)
     #Might wanna do this in the main call frame...
 
+
+
+
+
+
+############################### API CALLS #############################################
 
 def apiUpdateStock(apiTable):
 
@@ -393,70 +406,6 @@ def apiUpdateStock(apiTable):
     return inStockRegister
 
 
-def main_call_frame():
-    #O(n^2) longest funciton in the program
-    print("API LIST CALLED " + api_names[0] + " " + api_names[1] + " " + api_names[2])
-    register = [] # stores all with a stock of > 0
-
-
-    #################API's are called to check stock of current GPUs in database#######################
-    register += apiUpdateStock('bestbuyapi');
-    #register += apiUpdateStock('amazonapi'); ### Disabled due to having a 5000/month limit so its not constantly running
-    register += apiUpdateStock('neweggapi');
-
-    # #################################
-    # for i in range(len(a)):
-    #     name = "amazonapi"
-    #     try: 
-    #         #test the delete function seperately as this is very important
-    #         DeleteFromAPITable(name, a[i]) # will error so if it does that means it doesnt exist thus continue
-    #     except Exception:
-    #         pass
-
-    #     InsertIntoAPITable(name, a[i])
-    #     if(int(a[i][2]) > 0):
-    #         regester += a[i]
-
-    # #################################
-    # for i in range(len(b)):
-    #     name = "neweggapi"
-    #     try: 
-    #         #test the delete function seperately as this is very important
-    #         DeleteFromAPITable(name, b[i]) # will error so if it does that means it doesnt exist thus continue
-    #     except Exception:
-    #         pass
-
-    #     InsertIntoAPITable(name, b[i])
-    #     if(int(b[i][2]) > 0):
-    #         regester += b[i]
-
-    # #################################
-    # for i in range(len(c)):
-    #     name = "bestbuyapi"
-    #     try: 
-    #         #test the delete function seperately as this is very important
-    #         DeleteFromAPITable(name, c[i]) # will error so if it does that means it doesnt exist thus continue
-    #     except Exception:
-    #         pass
-
-    #     InsertIntoAPITable(name, c[i])
-    #     if(int(c[i][2]) > 0):
-    #         regester += c[i]  
-
-    return register         
-    # if any stock are at a values other than 0 send the reminder
-
-## this code makes the call go out once every day    
-# from apscheduler.schedulers.blocking import BlockingScheduler
-# scheduler = BlockingScheduler()
-# scheduler.add_job(main_call_frame(['']), 'interval', hours=24)
-# scheduler.start()
-
-
-
-
-
-
 def neweggCall(url):
 
     urls = url
@@ -492,8 +441,6 @@ def neweggCall(url):
     return dataList
 
     #print(dataList)
-
-
 
 
 #Request Limit: 20/day
@@ -569,7 +516,6 @@ def bestbuyAPI(sku):
     return dataList
 
 
-
 #Request Limit: 5,000/Month
 #Change Amazon product key(ASIN) at the end of URL to retrieve GPU info from listing
 #Provides:
@@ -613,6 +559,69 @@ def amazonAPI(asin):
     #print(dataList)
 
     return dataList
+
+#######################################################################################
+
+def main_call_frame():
+    #O(n^2) longest funciton in the program
+    print("API LIST CALLED " + api_names[0] + " " + api_names[1] + " " + api_names[2])
+    register = [] # stores all with a stock of > 0
+
+
+    #################API's are called to check stock of current GPUs in database#######################
+    register += apiUpdateStock('bestbuyapi');
+    #register += apiUpdateStock('amazonapi'); ### Disabled due to having a 5000/month limit so its not constantly running
+    register += apiUpdateStock('neweggapi');
+
+    # #################################
+    # for i in range(len(a)):
+    #     name = "amazonapi"
+    #     try: 
+    #         #test the delete function seperately as this is very important
+    #         DeleteFromAPITable(name, a[i]) # will error so if it does that means it doesnt exist thus continue
+    #     except Exception:
+    #         pass
+
+    #     InsertIntoAPITable(name, a[i])
+    #     if(int(a[i][2]) > 0):
+    #         regester += a[i]
+
+    # #################################
+    # for i in range(len(b)):
+    #     name = "neweggapi"
+    #     try: 
+    #         #test the delete function seperately as this is very important
+    #         DeleteFromAPITable(name, b[i]) # will error so if it does that means it doesnt exist thus continue
+    #     except Exception:
+    #         pass
+
+    #     InsertIntoAPITable(name, b[i])
+    #     if(int(b[i][2]) > 0):
+    #         regester += b[i]
+
+    # #################################
+    # for i in range(len(c)):
+    #     name = "bestbuyapi"
+    #     try: 
+    #         #test the delete function seperately as this is very important
+    #         DeleteFromAPITable(name, c[i]) # will error so if it does that means it doesnt exist thus continue
+    #     except Exception:
+    #         pass
+
+    #     InsertIntoAPITable(name, c[i])
+    #     if(int(c[i][2]) > 0):
+    #         regester += c[i]  
+
+    return register         
+    # if any stock are at a values other than 0 send the reminder
+
+## this code makes the call go out once every day    
+# from apscheduler.schedulers.blocking import BlockingScheduler
+# scheduler = BlockingScheduler()
+# scheduler.add_job(main_call_frame(['']), 'interval', hours=24)
+# scheduler.start()
+
+
 
 
 ######################Used to initialize api data tables###############################
