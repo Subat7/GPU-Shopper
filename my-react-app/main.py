@@ -174,29 +174,31 @@ def update_users(UserEmail):
     return True
 
 #Serch
-@app.route('/Searching', methods=['POST'])
-def Searching(Input1):
-    #Input1 = ""
-    #if request.method == 'POST':
-    #    data = json.loads(request.data)
-    #    Input1 = data['Search']
+@app.route('/Searching', methods=['GET' , 'POST'])
+def Searching():
+    Input1 = ""
+    if request.method == 'POST':
+       data = json.loads(request.data)
+       Input1 = data['Search']
     # a part or complete match
-    search_results = []
-    HEROKU_APP_NAME = "botproject-csce315"
-    import subprocess, psycopg2
-    # connection and execution
-    conn_info = subprocess.run(["heroku", "config:get", "DATABASE_URL", "-a", HEROKU_APP_NAME], stdout = subprocess.PIPE)
-    connuri = conn_info.stdout.decode('utf-8').strip()
-    conn = psycopg2.connect(connuri)
-    cursor = conn.cursor()
-    for i in range(len(api_names)):
-        cursor.execute("SELECT * FROM "+api_names[i]+" WHERE gpu LIKE '%"+ Input1 +"%' OR gpu LIKE '"+ Input1 +"%';") 
-        search_results += cursor.fetchall()
-    conn.commit()
-    cursor.close()
-    conn.close()
+    # search_results = []
+    # HEROKU_APP_NAME = "botproject-csce315"
+    # import subprocess, psycopg2
+    # # connection and execution
+    # conn_info = subprocess.run(["heroku", "config:get", "DATABASE_URL", "-a", HEROKU_APP_NAME], stdout = subprocess.PIPE)
+    # connuri = conn_info.stdout.decode('utf-8').strip()
+    # conn = psycopg2.connect(connuri)
+    # cursor = conn.cursor()
+    # for i in range(len(api_names)):
+    #     cursor.execute("SELECT * FROM "+api_names[i]+" WHERE gpu LIKE '%"+ Input1 +"%' OR gpu LIKE '"+ Input1 +"%';") 
+    #     search_results += cursor.fetchall()
+    # conn.commit()
+    # cursor.close()
+    # conn.close()
     print("Search Completed")
-    return search_results
+    print(Input1)
+    return "here"
+    #return search_results
 
 ############################### Print Functions #######################################
 
