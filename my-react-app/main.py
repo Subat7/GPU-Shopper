@@ -31,7 +31,7 @@ def serve(path):
         return send_from_directory(app.static_folder, 'index.html')
  
 #local function for connecting via a one input string
-@app.route('/LoginValidation',methods=['POST'])
+@app.route('/LoginValidation',methods=['POST']) #############Can be removed after further flask functions are implemented
 def LoginValidation():
     userName = ""
     userPass = ""
@@ -59,20 +59,35 @@ def LoginValidation():
         return jsonify({"loggedIn": False})
     cursor.close()
     conn.close()
+
  
-@app.route('/EnterUserToTable',methods=['POST'])
-def EnterUserToTable():
-    userName = ""
-    userPass = ""
-    if request.method == 'POST':
-        data = json.loads(request.data)
-        userName = data['userName']
-        userPass = data['pass']
-    HerokuExecutionSQL("INSERT INTO Users VALUES(" + "\'"+ userName + "\'," + "\'" + userPass + "\'," + '0, 0);')
-    print("Updated Users Table with -", userName)
- 
-@app.route('/RemoveUserFromTable',methods=['POST'])
-def RemoveUserFromTable():
+@app.route('/addUserTracking',methods=['POST'])
+def addUserTracking(userEmail, gpuInfo):
+    email = userEmail
+    gpu = gpuInfo
+
+    ############### uncomment for FLASK ###################
+    # email = ''
+    # gpu = ''
+
+    # if request.method == 'POST':
+    #     data = json.loads(request.data)
+    #     email = data['Email']
+    #     gpu = data['Gpu']
+
+    dataExists = herokuRetrieveData("SELECT email, gpu_name FROM users WHERE email = " + "\'" + email + "\'" + "and gpu_name = " + "\'" + gpuInfo[0] + "\'" + ";")
+    print(dataExists)
+
+    if dataExists[0][0] == email and dataExists[0][1] == gpuInfo[0]:
+        print("Tracking for " + gpuInfo[0] + " for user " + email + " already in database")
+    else:
+
+        HerokuExecutionSQL("INSERT INTO users VALUES(" + "\'"+ email + "\'," + "\'" + gpu[0] + "\'," + "\'" + gpu[1] + "\'," + "\'" + gpu[2] + "\'," + "\'" + gpu[3] + "\'," + "\'" + gpu[4] + "\'" + ");")
+        print("Updated User " + email + " tracking list with " + gpu[0] + "\n" )
+
+
+@app.route('/removeUserTracking',methods=['POST'])
+def removeUserTracking():
     userName = ""
     if request.method == 'POST':
         data = json.loads(request.data)
@@ -91,19 +106,6 @@ def UpdateEmail():
         userEmail = data['Email']
     HerokuExecutionSQL("UPDATE Users SET Email ="  + "\'" + userEmail  + "\'" + "WHERE Username = "  + "\'" + userName  + "\';")
     print("Updated User -", userName, " - with Email -", userEmail)
- 
-############################### NEEDS TO BE TESTES ##############################
-@app.route('/UpdatePhone',methods=['POST'])
-def UpdatePhone():
-    userName = ""
-    userPhone = ""
-    if request.method == 'POST':
-        data = json.loads(request.data)
-        userName = data['userName']
-        userPhone = data['Phone']
-    HerokuExecutionSQL("UPDATE Users SET Phone ="  + "\'" + userPhone  + "\'" + "WHERE Username = "  + "\'" + userName  + "\';")
-    print("Updated User -", userName, " - with Phone -", userPhone)
- 
 
 ############################### Tracking List Back end ##############################
 @app.route('/NewTrackingTable',methods=['POST'])
@@ -682,4 +684,6 @@ def main_call_frame():
 # liststock = main_call_frame()
 # print(liststock)
 
+gpuInfo = ['NVIDIA' , '399', '1', 'URL', 'Image']
+addUserTracking('daviddk226@gmail.com', gpuInfo)
 
