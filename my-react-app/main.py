@@ -175,16 +175,17 @@ def DeleteFromAPITable(Table, table_info):
     print("deleted from ", Table, "'s table with gpu - ", table_info[0],";")
 #cycling
 
+user_email_account = ""
 #add in a new user/call every time 
-@app.route('/update_users') 
-def update_users(UserEmail):
-    if UserEmail in list_of_users:
-        print("Already in the database")
-        return False
-    else:
-        print("Entered new user" + UserEmail)
-        list_of_users.add(UserEmail)
-    return True
+@app.route('/update_users', methods=['POST']) 
+def update_users():
+    UserEmail = ""
+    if request.method == 'POST':
+       data = json.loads(request.data)
+       UserEmail = data['UserEmail']
+       user_email_account = UserEmail
+       print(UserEmail)
+    return user_email_account
 
 #Serch
 @app.route('/Searching', methods=['GET' , 'POST'])
