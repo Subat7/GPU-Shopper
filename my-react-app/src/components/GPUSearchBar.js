@@ -27,9 +27,14 @@ export default function GPUSearchBar() {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({Search: Search})
-    });
 
-    console.log(response);
+    }).then(function (response) {
+      return response.text();
+    }).then(function (text) {
+      console.log(text);
+    })
+
+    //console.log(response);
   };
 
   const handleChange = (event) => {

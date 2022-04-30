@@ -78,12 +78,14 @@ def addUserTracking(userEmail, gpuInfo):
     dataExists = herokuRetrieveData("SELECT email, gpu_name FROM users WHERE email = " + "\'" + email + "\'" + "and gpu_name = " + "\'" + gpuInfo[0] + "\'" + ";")
     print(dataExists)
 
-    if dataExists[0][0] == email and dataExists[0][1] == gpuInfo[0]:
-        print("Tracking for " + gpuInfo[0] + " for user " + email + " already in database")
-    else:
+    if len(dataExists) == 0:
 
         HerokuExecutionSQL("INSERT INTO users VALUES(" + "\'"+ email + "\'," + "\'" + gpu[0] + "\'," + "\'" + gpu[1] + "\'," + "\'" + gpu[2] + "\'," + "\'" + gpu[3] + "\'," + "\'" + gpu[4] + "\'" + ");")
         print("Updated User " + email + " tracking list with " + gpu[0] + "\n" )
+
+    else:
+        print("Tracking for " + gpuInfo[0] + " for user " + email + " already in database")
+
 
 
 @app.route('/removeUserTracking',methods=['POST'])
@@ -95,6 +97,19 @@ def removeUserTracking():
     HEROKU_APP_NAME = "botproject-csce315"
     HerokuExecutionSQL("DELETE FROM Users WHERE Username = " + "\'" + userName + "\';")
     print("Deleted -", userName, "- From the table Users")  
+
+
+user_email_account = ""
+#add in a new user/call every time 
+@app.route('/update_users', methods=['POST']) 
+def update_users():
+    UserEmail = ""
+    if request.method == 'POST':
+       data = json.loads(request.data)
+       UserEmail = data['UserEmail']
+       user_email_account = UserEmail
+       print(UserEmail)
+    return user_email_account
  
 @app.route('/UpdateEmail',methods=['POST'])
 def UpdateEmail():
@@ -164,16 +179,6 @@ def DeleteFromAPITable(Table, table_info):
     print("deleted from ", Table, "'s table with gpu - ", table_info[0],";")
 #cycling
 
-#add in a new user/call every time 
-@app.route('/update_users') 
-def update_users(UserEmail):
-    if UserEmail in list_of_users:
-        print("Already in the database")
-        return False
-    else:
-        print("Entered new user" + UserEmail)
-        list_of_users.add(UserEmail)
-    return True
 
 #Serch
 @app.route('/Searching', methods=['GET' , 'POST'])
@@ -684,6 +689,6 @@ def main_call_frame():
 # liststock = main_call_frame()
 # print(liststock)
 
-gpuInfo = ['NVIDIA' , '399', '1', 'URL', 'Image']
-addUserTracking('daviddk226@gmail.com', gpuInfo)
+# gpuInfo = ['NVIDIA' , '399', '1', 'URL', 'Image']
+# addUserTracking('daviddk226@gmail.com', gpuInfo)
 
