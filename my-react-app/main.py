@@ -104,35 +104,30 @@ def DeleteFromAPITable(Table, table_info):
 
 @app.route('/print_api_results', methods = ['POST'])
 def print_api_results():
-    HEROKU_APP_NAME = "botproject-csce315"
-    import subprocess, psycopg2
-    # connection and execution
-    conn_info = subprocess.run(["heroku", "config:get", "DATABASE_URL", "-a", HEROKU_APP_NAME], stdout = subprocess.PIPE)
-    connuri = conn_info.stdout.decode('utf-8').strip()
-    conn = psycopg2.connect(connuri)
-    cursor = conn.cursor()
 
-    dataList = [{}] * 33
+    sizeData = []
+    rowSize = 0
+    for i in range(len(api_names)):
+        sizeData = herokuRetrieveData("SELECT  count(*) as row_size FROM "  + api_names[i] + ";")
+        rowSize += sizeData[0][0]
+
+    dataList = [{}] * rowSize
     count = 0
     for i in range(len(api_names)):
-        cursor.execute("SELECT * FROM " + api_names[i] + ";")
-        results= cursor.fetchall()
 
-        print(api_names[i])
-
+        results = herokuRetrieveData("SELECT * FROM " + api_names[i] + ";")
+      
         for i in range(len(results)):
 
             dictList = { 'label' : results[i][0], 'price': results[i][1], 'url': results[i][3], 'image': results[i][4], 'stock': results[i][2], 'item number': results[i][5]}
             dataList[i+count] = dictList
 
-        count += 11
+        count+= len(results)
+        #print(count)
 
-    conn.commit()
-    cursor.close()
-    conn.close()
     print("Search Completed")
     final = json.dumps(dataList, indent=2)
-    #print(final)
+    print(final)
     return final
 
 @app.route('/print_tracker_list')
@@ -199,33 +194,29 @@ def email_send(Username, Info):
     EMAIL_ADDRESS = 'BotNetGPUs@gmail.com'
     EMAIL_PASSWORD = 'BotNetisCool1234'
 
-    Intro = "Dear " + Username + "<br>" + "These GPUs are currently in-stock for a limited time!<br>"
-    gpuListingInfo = Info[0] + "<br>" + "Price: " + Info[1] + "<br>" + " URL: " + Info[3] + "<br>" 
-
-
-
     #msg = EmailMessage()
     msg = MIMEMultipart("alternative")
     msg['Subject'] = "Bot Net GPUS Notification"
     msg['From'] = EMAIL_ADDRESS
-    msg['To'] = Username + '@gmail.com'
-    #msg.set_content(Information_parsed)
+    msg['To'] = Username
 
-    # now create a Content-ID for the image
-    image_cid = make_msgid(domain="")
-    # if `domain` argument isn't provided, it will 
-    # use your computer's name
+    html = ""
+    Intro = "Dear " + Username + "<br>" + "These GPUs are currently in-stock for a limited time!<br>"
 
-    # set an alternative html body
-    html = """\
-    <html>
-        <body>
-            <p>""" + Intro + """</p>
-            <img  src = """ + Info[4] + """ width: "100" height: "100" >
-            <p>""" + gpuListingInfo + """</p>
-        </body>
-    </html>
-    """
+    for i in Info:
+
+        gpuListingInfo = i[0] + "<br>" + "Price: " + i[1] + "<br>" + " URL: " + i[3] + "<br>" 
+
+        # set an alternative html body
+        html += """\
+        <html>
+            <body>
+                <p>""" + Intro + """</p>
+                <img  src = """ + i[4] + """ width: "100" height: "100" >
+                <p>""" + gpuListingInfo + """</p>
+            </body>
+        </html>
+        """
 
     part = MIMEText(html, "html")
     msg.attach(part)
@@ -238,18 +229,45 @@ def email_send(Username, Info):
         smtp.quit()
 
 
+def emaiList():
+
+    trackingList = herokuRetrieveData("SELECT * FROM users;")
+    userList = herokuRetrieveData("SELECT DISTINCT email FROM users;")
+
+
+    for i in userList:
+        inStockUserList = []
+
+        for j in trackingList:
+
+            if i[0] == j[0]:
+
+                for k in inStockRegister:
+                    if k[0] == j[1]:
+                        inStockUserList.append(k)
+
+        print(inStockUserList)
+        email_send(i[0], inStockUserList)
+
+
+
+
+
 ############################### Tracking Table Functionality ##########################
 user_email_account = ""
 #add in a new user/call every time 
 @app.route('/update_users', methods=['POST']) 
 def update_users():
     UserEmail = ""
+    global user_email_account
+
     if request.method == 'POST':
        data = json.loads(request.data)
        UserEmail = data['UserEmail']
        user_email_account = UserEmail
        print(UserEmail)
-    return user_email_account
+    
+
 
 @app.route('/addUserTracking',methods=['POST'])
 def addUserTracking(userEmail, gpuInfo):
@@ -304,24 +322,14 @@ def removeUserTracking(userEmail, gpuInfo):
         print("Removed Users " + email + " tracking of " + gpu[0] + " from list" )
 
 
-@app.route('/retrieveTrackingList', methods=['GET' , 'POST'])
-def retrieveTrackingList(userEmail):
+@app.route('/retrieveTrackingList', methods=['POST'])
+def retrieveTrackingList():
 
-    email = userEmail
-
-############### Uncommente for Flask ##################
-    # email = ""
-    # if request.method == 'POST':
-    #    data = json.loads(request.data)
-    #    email = data['UserEmail']
-    #    user_email_account = email
-    #    print(email)
-    # return user_email_account
+    #email = userEmail
 
     trackingList = herokuRetrieveData("SELECT * FROM users WHERE email = " + "\'" + email + "\'" + ";")
 
-    for i in trackingList:
-        print(i)
+    
 
     return trackingList
 
@@ -344,7 +352,7 @@ def apiUpdateStock(apiTable):
                 HerokuExecutionSQL("UPDATE " + apiTable + " SET stock = " + '\'' + updatedStock + '\'' + " WHERE sku = " + '\'' + sku + '\''+ ";")
 
             if updatedStock == '1':
-                inStockRegister += newData
+                inStockRegister.append(newData)
 
 
         elif apiTable == 'neweggapi':
@@ -358,7 +366,7 @@ def apiUpdateStock(apiTable):
                 HerokuExecutionSQL("UPDATE " + apiTable + " SET stock = " + '\'' + updatedStock + '\'' + " WHERE item_number = " + '\'' + itemNum + '\''+ ";")
 
             if updatedStock == '1':
-                inStockRegister += newData
+                inStockRegister.append(newData)
 
         elif apiTable == 'amazonapi':
             asin = i[5]
@@ -370,13 +378,15 @@ def apiUpdateStock(apiTable):
                 HerokuExecutionSQL("UPDATE " + apiTable + " SET stock = " + '\'' + updatedStock + '\'' + " WHERE asin = " + '\'' + asin + '\''+ ";")
 
             if updatedStock == '1':
-                inStockRegister += newData
+                inStockRegister.append(newData)
 
     print(inStockRegister)
     return inStockRegister
 
 
 def neweggCall(url):
+
+    #print("Running Newegg Api")
 
     urls = url
 
@@ -460,6 +470,7 @@ def neweggAPI():
 #Price
 #SKU
 def bestbuyAPI(sku):
+    #print("Running Best Buy Api")
 
     url = "https://api.bestbuy.com/v1/products/" + str(sku) + ".json?apiKey=qhqws47nyvgze2mq3qx4jadt&show=sku,name,salePrice,onlineAvailability,image,url" #<----- Change SKU to request details for specifc GPU : /products/SKU
 
@@ -492,6 +503,7 @@ def bestbuyAPI(sku):
 #Pricing ---> if NULL then its out of stock
 #Available Quanity 
 def amazonAPI(asin):
+    #print("Running Amazon Api")
 
     url = "https://amazon24.p.rapidapi.com/api/product/" + asin #<----Product Key(ASIN)
 
@@ -535,13 +547,15 @@ def amazonAPI(asin):
 def main_call_frame():
     #O(n^2) longest funciton in the program
     print("API LIST CALLED " + api_names[0] + " " + api_names[1] + " " + api_names[2])
-    register = [] # stores all with a stock of > 0
+    global inStockRegister
 
 
     #################API's are called to check stock of current GPUs in database#######################
-    register += apiUpdateStock('bestbuyapi');
-    #register += apiUpdateStock('amazonapi'); ### Disabled due to having a 5000/month limit so its not constantly running
-    register += apiUpdateStock('neweggapi');
+    inStockRegister += apiUpdateStock('bestbuyapi');
+    #inStockRegister += apiUpdateStock('amazonapi'); ### Disabled due to having a 5000/month limit so its not constantly running
+    inStockRegister+= apiUpdateStock('neweggapi');
+
+    emaiList()
 
     # #################################
     # for i in range(len(a)):
@@ -582,7 +596,7 @@ def main_call_frame():
     #     if(int(c[i][2]) > 0):
     #         regester += c[i]  
 
-    return register         
+    return inStockRegister
     # if any stock are at a values other than 0 send the reminder
 
 ## this code makes the call go out once every day    
@@ -656,3 +670,4 @@ def main_call_frame():
 
 #retrieveTrackingList('daviddk226@gmail.com')
 
+main_call_frame()
