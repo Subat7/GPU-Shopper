@@ -39,7 +39,7 @@ export default function GPUSearchBar() {
       disablePortal
       id="combo-box-demo"
       options={gpus}
-      sx={{ width: 1500 }}
+      sx={{ width: 1000 }}
       renderInput={(params) => <TextField {...params} label="Search for GPUs in the Database" />}
     />
   );
