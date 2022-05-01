@@ -59,57 +59,6 @@ def LoginValidation():
         return jsonify({"loggedIn": False})
     cursor.close()
     conn.close()
-
- 
-@app.route('/addUserTracking',methods=['POST'])
-def addUserTracking(userEmail, gpuInfo):
-    email = userEmail
-    gpu = gpuInfo
-
-    ############### uncomment for FLASK ###################
-    # email = ''
-    # gpu = ''
-
-    # if request.method == 'POST':
-    #     data = json.loads(request.data)
-    #     email = data['Email']
-    #     gpu = data['Gpu']
-
-    dataExists = herokuRetrieveData("SELECT email, gpu_name FROM users WHERE email = " + "\'" + email + "\'" + "and gpu_name = " + "\'" + gpuInfo[0] + "\'" + ";")
-    print(dataExists)
-
-    if len(dataExists) == 0:
-
-        HerokuExecutionSQL("INSERT INTO users VALUES(" + "\'"+ email + "\'," + "\'" + gpu[0] + "\'," + "\'" + gpu[1] + "\'," + "\'" + gpu[2] + "\'," + "\'" + gpu[3] + "\'," + "\'" + gpu[4] + "\'" + ");")
-        print("Updated User " + email + " tracking list with " + gpu[0] + "\n" )
-
-    else:
-        print("Tracking for " + gpuInfo[0] + " for user " + email + " already in database")
-
-
-
-@app.route('/removeUserTracking',methods=['POST'])
-def removeUserTracking():
-    userName = ""
-    if request.method == 'POST':
-        data = json.loads(request.data)
-        userName = data['userName']
-    HEROKU_APP_NAME = "botproject-csce315"
-    HerokuExecutionSQL("DELETE FROM Users WHERE Username = " + "\'" + userName + "\';")
-    print("Deleted -", userName, "- From the table Users")  
-
-
-user_email_account = ""
-#add in a new user/call every time 
-@app.route('/update_users', methods=['POST']) 
-def update_users():
-    UserEmail = ""
-    if request.method == 'POST':
-       data = json.loads(request.data)
-       UserEmail = data['UserEmail']
-       user_email_account = UserEmail
-       print(UserEmail)
-    return user_email_account
  
 @app.route('/UpdateEmail',methods=['POST'])
 def UpdateEmail():
@@ -177,7 +126,74 @@ def InsertIntoAPITable(Table, table_info):
 def DeleteFromAPITable(Table, table_info):
     HerokuExecutionSQL("DELETE FROM " + Table + " WHERE gpu = " + "\'" + table_info[0] + "\'" + ";")
     print("deleted from ", Table, "'s table with gpu - ", table_info[0],";")
+
 #cycling
+
+
+@app.route('/addUserTracking',methods=['POST'])
+def addUserTracking(userEmail, gpuInfo):
+    email = userEmail
+    gpu = gpuInfo
+
+    ############### uncomment for FLASK ###################
+    # email = ''
+    # gpu = ''
+
+    # if request.method == 'POST':
+    #     data = json.loads(request.data)
+    #     email = data['Email']
+    #     gpu = data['Gpu']
+
+    dataExists = herokuRetrieveData("SELECT email, gpu_name FROM users WHERE email = " + "\'" + email + "\'" + "and gpu_name = " + "\'" + gpuInfo[0] + "\'" + ";")
+    print(dataExists)
+
+    if len(dataExists) == 0:
+
+        HerokuExecutionSQL("INSERT INTO users VALUES(" + "\'"+ email + "\'," + "\'" + gpu[0] + "\'," + "\'" + gpu[1] + "\'," + "\'" + gpu[2] + "\'," + "\'" + gpu[3] + "\'," + "\'" + gpu[4] + "\'" + ");")
+        print("Updated User " + email + " tracking list with " + gpu[0])
+
+    else:
+        print("Tracking for " + gpuInfo[0] + " for user " + email + " already in database")
+
+
+
+@app.route('/removeUserTracking',methods=['POST'])
+def removeUserTracking(userEmail, gpuInfo):
+    email = userEmail
+    gpu = gpuInfo
+
+    ############### uncomment for FLASK ###################
+    # email = ''
+    # gpu = ''
+
+    # if request.method == 'POST':
+    #     data = json.loads(request.data)
+    #     email = data['Email']
+    #     gpu = data['Gpu']
+
+    dataExists = herokuRetrieveData("SELECT email, gpu_name FROM users WHERE email = " + "\'" + email + "\'" + "and gpu_name = " + "\'" + gpuInfo[0] + "\'" + ";")
+    print(dataExists)
+
+    if len(dataExists) == 0:
+
+        print("Tracking for " + gpuInfo[0] + " for user " + email + " has already been removed")
+
+    else:
+        HerokuExecutionSQL("DELETE FROM users WHERE email = " + "\'" + email + "\'" + "and gpu_name = " + "\'" + gpuInfo[0] + "\'" + ";")
+        print("Removed Users " + email + " tracking of " + gpu[0] + " from list" )
+
+
+user_email_account = ""
+#add in a new user/call every time 
+@app.route('/update_users', methods=['POST']) 
+def update_users():
+    UserEmail = ""
+    if request.method == 'POST':
+       data = json.loads(request.data)
+       UserEmail = data['UserEmail']
+       user_email_account = UserEmail
+       print(UserEmail)
+    return user_email_account
 
 
 #Serch
@@ -206,6 +222,29 @@ def Searching():
     print(Input1)
     return "here"
     #return search_results
+
+@app.route('/retrieveTrackingList', methods=['GET' , 'POST'])
+def retrieveTrackingList(userEmail):
+
+    email = userEmail
+
+############### Uncommente for Flask ##################
+    # email = ""
+    # if request.method == 'POST':
+    #    data = json.loads(request.data)
+    #    email = data['UserEmail']
+    #    user_email_account = email
+    #    print(email)
+    # return user_email_account
+
+    trackingList = herokuRetrieveData("SELECT * FROM users WHERE email = " + "\'" + email + "\'" + ";")
+
+    for i in trackingList:
+        print(i)
+
+    return trackingList
+    
+
 
 ############################### Print Functions #######################################
 
@@ -689,6 +728,9 @@ def main_call_frame():
 # liststock = main_call_frame()
 # print(liststock)
 
-# gpuInfo = ['NVIDIA' , '399', '1', 'URL', 'Image']
-# addUserTracking('daviddk226@gmail.com', gpuInfo)
+#gpuInfo = ['NVIDIA' , '399', '1', 'URL', 'Image']
+#addUserTracking('daviddk226@gmail.com', gpuInfo)
+#removeUserTracking('daviddk226@gmail.com', gpuInfo)
+
+#retrieveTrackingList('daviddk226@gmail.com')
 
