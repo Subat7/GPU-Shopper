@@ -30,35 +30,6 @@ def serve(path):
     else:
         return send_from_directory(app.static_folder, 'index.html')
  
-#local function for connecting via a one input string
-@app.route('/LoginValidation',methods=['POST']) #############Can be removed after further flask functions are implemented
-def LoginValidation():
-    userName = ""
-    userPass = ""
-    if request.method == 'POST':
-        data = json.loads(request.data)
-        userName = data['userName']
-        userPass = data['pass']
-    #print(userName)
-    #print(userPass)
-    HEROKU_APP_NAME = "botproject-csce315"
-    import subprocess, psycopg2
-    conn_info = subprocess.run(["heroku", "config:get", "DATABASE_URL", "-a", HEROKU_APP_NAME], stdout = subprocess.PIPE)
-    connuri = conn_info.stdout.decode('utf-8').strip()
-    conn = psycopg2.connect(connuri)
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM Users WHERE Username = " + "\'"+ userName + "\'" + " AND Password = " + "\'"+ userPass + "\'" + ";")
-    a = cursor.fetchall()
-    print(a[0][0])
-    print(a[0][1])
-    if (userName == a[0][0] and userPass == a[0][1]) :
-        print ("Access granted")
-        return jsonify({"loggedIn": True})
-    else:
-        print("Incorrect Info")
-        return jsonify({"loggedIn": False})
-    cursor.close()
-    conn.close()
  
 @app.route('/UpdateEmail',methods=['POST'])
 def UpdateEmail():
@@ -126,67 +97,6 @@ def InsertIntoAPITable(Table, table_info):
 def DeleteFromAPITable(Table, table_info):
     HerokuExecutionSQL("DELETE FROM " + Table + " WHERE gpu = " + "\'" + table_info[0] + "\'" + ";")
     print("deleted from ", Table, "'s table with gpu - ", table_info[0],";")
-
-#cycling
-user_email_account = ""
-#add in a new user/call every time 
-@app.route('/update_users', methods=['POST']) 
-def update_users():
-    UserEmail = ""
-    if request.method == 'POST':
-       data = json.loads(request.data)
-       UserEmail = data['UserEmail']
-       user_email_account = UserEmail
-       print(UserEmail)
-    return user_email_account
-
-#Serch
-@app.route('/Searching', methods=['GET' , 'POST'])
-def Searching():
-    Input1 = ""
-    if request.method == 'POST':
-       data = json.loads(request.data)
-       Input1 = data['Search']
-    # a part or complete match
-    # search_results = []
-    # HEROKU_APP_NAME = "botproject-csce315"
-    # import subprocess, psycopg2
-    # # connection and execution
-    # conn_info = subprocess.run(["heroku", "config:get", "DATABASE_URL", "-a", HEROKU_APP_NAME], stdout = subprocess.PIPE)
-    # connuri = conn_info.stdout.decode('utf-8').strip()
-    # conn = psycopg2.connect(connuri)
-    # cursor = conn.cursor()
-    # for i in range(len(api_names)):
-    #     cursor.execute("SELECT * FROM "+api_names[i]+" WHERE gpu LIKE '%"+ Input1 +"%' OR gpu LIKE '"+ Input1 +"%';") 
-    #     search_results += cursor.fetchall()
-    # conn.commit()
-    # cursor.close()
-    # conn.close()
-    print("Search Completed")
-    print(Input1)
-    return "here"
-    #return search_results
-
-@app.route('/retrieveTrackingList', methods=['GET' , 'POST'])
-def retrieveTrackingList(userEmail):
-
-    email = userEmail
-
-############### Uncommente for Flask ##################
-    # email = ""
-    # if request.method == 'POST':
-    #    data = json.loads(request.data)
-    #    email = data['UserEmail']
-    #    user_email_account = email
-    #    print(email)
-    # return user_email_account
-
-    trackingList = herokuRetrieveData("SELECT * FROM users WHERE email = " + "\'" + email + "\'" + ";")
-
-    for i in trackingList:
-        print(i)
-
-    return trackingList
     
 
 
@@ -328,8 +238,92 @@ def email_send(Username, Info):
         smtp.quit()
 
 
+############################### Tracking Table Functionality ##########################
+user_email_account = ""
+#add in a new user/call every time 
+@app.route('/update_users', methods=['POST']) 
+def update_users():
+    UserEmail = ""
+    if request.method == 'POST':
+       data = json.loads(request.data)
+       UserEmail = data['UserEmail']
+       user_email_account = UserEmail
+       print(UserEmail)
+    return user_email_account
+
+@app.route('/addUserTracking',methods=['POST'])
+def addUserTracking(userEmail, gpuInfo):
+    email = userEmail
+    gpu = gpuInfo
+
+    ############### uncomment for FLASK ###################
+    # email = ''
+    # gpu = ''
+
+    # if request.method == 'POST':
+    #     data = json.loads(request.data)
+    #     email = data['Email']
+    #     gpu = data['Gpu']
+
+    dataExists = herokuRetrieveData("SELECT email, gpu_name FROM users WHERE email = " + "\'" + email + "\'" + "and gpu_name = " + "\'" + gpuInfo[0] + "\'" + ";")
+    print(dataExists)
+
+    if len(dataExists) == 0:
+
+        HerokuExecutionSQL("INSERT INTO users VALUES(" + "\'"+ email + "\'," + "\'" + gpu[0] + "\'," + "\'" + gpu[1] + "\'," + "\'" + gpu[2] + "\'," + "\'" + gpu[3] + "\'," + "\'" + gpu[4] + "\'" + ");")
+        print("Updated User " + email + " tracking list with " + gpu[0])
+
+    else:
+        print("Tracking for " + gpuInfo[0] + " for user " + email + " already in database")
 
 
+
+@app.route('/removeUserTracking',methods=['POST'])
+def removeUserTracking(userEmail, gpuInfo):
+    email = userEmail
+    gpu = gpuInfo
+
+    ############### uncomment for FLASK ###################
+    # email = ''
+    # gpu = ''
+
+    # if request.method == 'POST':
+    #     data = json.loads(request.data)
+    #     email = data['Email']
+    #     gpu = data['Gpu']
+
+    dataExists = herokuRetrieveData("SELECT email, gpu_name FROM users WHERE email = " + "\'" + email + "\'" + "and gpu_name = " + "\'" + gpuInfo[0] + "\'" + ";")
+    print(dataExists)
+
+    if len(dataExists) == 0:
+
+        print("Tracking for " + gpuInfo[0] + " for user " + email + " has already been removed")
+
+    else:
+        HerokuExecutionSQL("DELETE FROM users WHERE email = " + "\'" + email + "\'" + "and gpu_name = " + "\'" + gpuInfo[0] + "\'" + ";")
+        print("Removed Users " + email + " tracking of " + gpu[0] + " from list" )
+
+
+@app.route('/retrieveTrackingList', methods=['GET' , 'POST'])
+def retrieveTrackingList(userEmail):
+
+    email = userEmail
+
+############### Uncommente for Flask ##################
+    # email = ""
+    # if request.method == 'POST':
+    #    data = json.loads(request.data)
+    #    email = data['UserEmail']
+    #    user_email_account = email
+    #    print(email)
+    # return user_email_account
+
+    trackingList = herokuRetrieveData("SELECT * FROM users WHERE email = " + "\'" + email + "\'" + ";")
+
+    for i in trackingList:
+        print(i)
+
+    return trackingList
 
 
 ############################### API CALLS #############################################
@@ -661,56 +655,4 @@ def main_call_frame():
 #removeUserTracking('daviddk226@gmail.com', gpuInfo)
 
 #retrieveTrackingList('daviddk226@gmail.com')
-
-@app.route('/addUserTracking',methods=['POST'])
-def addUserTracking(userEmail, gpuInfo):
-    email = userEmail
-    gpu = gpuInfo
-
-    ############### uncomment for FLASK ###################
-    # email = ''
-    # gpu = ''
-
-    # if request.method == 'POST':
-    #     data = json.loads(request.data)
-    #     email = data['Email']
-    #     gpu = data['Gpu']
-
-    dataExists = herokuRetrieveData("SELECT email, gpu_name FROM users WHERE email = " + "\'" + email + "\'" + "and gpu_name = " + "\'" + gpuInfo[0] + "\'" + ";")
-    print(dataExists)
-
-    if len(dataExists) == 0:
-
-        HerokuExecutionSQL("INSERT INTO users VALUES(" + "\'"+ email + "\'," + "\'" + gpu[0] + "\'," + "\'" + gpu[1] + "\'," + "\'" + gpu[2] + "\'," + "\'" + gpu[3] + "\'," + "\'" + gpu[4] + "\'" + ");")
-        print("Updated User " + email + " tracking list with " + gpu[0])
-
-    else:
-        print("Tracking for " + gpuInfo[0] + " for user " + email + " already in database")
-
-
-
-@app.route('/removeUserTracking',methods=['POST'])
-def removeUserTracking(userEmail, gpuInfo):
-    email = userEmail
-    gpu = gpuInfo
-
-    ############### uncomment for FLASK ###################
-    # email = ''
-    # gpu = ''
-
-    # if request.method == 'POST':
-    #     data = json.loads(request.data)
-    #     email = data['Email']
-    #     gpu = data['Gpu']
-
-    dataExists = herokuRetrieveData("SELECT email, gpu_name FROM users WHERE email = " + "\'" + email + "\'" + "and gpu_name = " + "\'" + gpuInfo[0] + "\'" + ";")
-    print(dataExists)
-
-    if len(dataExists) == 0:
-
-        print("Tracking for " + gpuInfo[0] + " for user " + email + " has already been removed")
-
-    else:
-        HerokuExecutionSQL("DELETE FROM users WHERE email = " + "\'" + email + "\'" + "and gpu_name = " + "\'" + gpuInfo[0] + "\'" + ";")
-        print("Removed Users " + email + " tracking of " + gpu[0] + " from list" )
 
