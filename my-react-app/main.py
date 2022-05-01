@@ -200,8 +200,15 @@ def email_send(Username, Info):
     msg['From'] = EMAIL_ADDRESS
     msg['To'] = Username
 
-    html = ""
     Intro = "Dear " + Username + "<br>" + "These GPUs are currently in-stock for a limited time!<br>"
+
+    html = """\
+    <html>
+        <body>
+            <p>""" + Intro + """</p>
+        </body>
+    </html>
+    """
 
     for i in Info:
 
@@ -211,7 +218,6 @@ def email_send(Username, Info):
         html += """\
         <html>
             <body>
-                <p>""" + Intro + """</p>
                 <img  src = """ + i[4] + """ width: "100" height: "100" >
                 <p>""" + gpuListingInfo + """</p>
             </body>
@@ -237,6 +243,7 @@ def emaiList():
 
     for i in userList:
         inStockUserList = []
+        print(len(inStockUserList))
 
         for j in trackingList:
 
@@ -246,8 +253,11 @@ def emaiList():
                     if k[0] == j[1]:
                         inStockUserList.append(k)
 
-        print(inStockUserList)
-        email_send(i[0], inStockUserList)
+        #print(inStockUserList)
+        if len(inStockUserList) != 0:
+            email_send(i[0], inStockUserList)
+        else:
+            print("No tracking list matches for user: " + i[0])
 
 
 
@@ -380,7 +390,7 @@ def apiUpdateStock(apiTable):
             if updatedStock == '1':
                 inStockRegister.append(newData)
 
-    print(inStockRegister)
+    #print(inStockRegister)
     return inStockRegister
 
 
