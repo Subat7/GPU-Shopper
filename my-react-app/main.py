@@ -243,7 +243,6 @@ def emaiList():
 
     for i in userList:
         inStockUserList = []
-        print(len(inStockUserList))
 
         for j in trackingList:
 
@@ -261,8 +260,6 @@ def emaiList():
 
 
 
-
-
 ############################### Tracking Table Functionality ##########################
 user_email_account = ""
 #add in a new user/call every time 
@@ -276,7 +273,8 @@ def update_users():
        UserEmail = data['UserEmail']
        user_email_account = UserEmail
        print(UserEmail)
-    
+
+    return user_email_account
 
 
 @app.route('/addUserTracking',methods=['POST'])
@@ -338,8 +336,6 @@ def retrieveTrackingList():
     #email = userEmail
 
     trackingList = herokuRetrieveData("SELECT * FROM users WHERE email = " + "\'" + email + "\'" + ";")
-
-    
 
     return trackingList
 
@@ -561,61 +557,21 @@ def main_call_frame():
 
 
     #################API's are called to check stock of current GPUs in database#######################
-    inStockRegister += apiUpdateStock('bestbuyapi');
+    #inStockRegister += apiUpdateStock('bestbuyapi');
     #inStockRegister += apiUpdateStock('amazonapi'); ### Disabled due to having a 5000/month limit so its not constantly running
     inStockRegister+= apiUpdateStock('neweggapi');
 
     emaiList()
 
-    # #################################
-    # for i in range(len(a)):
-    #     name = "amazonapi"
-    #     try: 
-    #         #test the delete function seperately as this is very important
-    #         DeleteFromAPITable(name, a[i]) # will error so if it does that means it doesnt exist thus continue
-    #     except Exception:
-    #         pass
-
-    #     InsertIntoAPITable(name, a[i])
-    #     if(int(a[i][2]) > 0):
-    #         regester += a[i]
-
-    # #################################
-    # for i in range(len(b)):
-    #     name = "neweggapi"
-    #     try: 
-    #         #test the delete function seperately as this is very important
-    #         DeleteFromAPITable(name, b[i]) # will error so if it does that means it doesnt exist thus continue
-    #     except Exception:
-    #         pass
-
-    #     InsertIntoAPITable(name, b[i])
-    #     if(int(b[i][2]) > 0):
-    #         regester += b[i]
-
-    # #################################
-    # for i in range(len(c)):
-    #     name = "bestbuyapi"
-    #     try: 
-    #         #test the delete function seperately as this is very important
-    #         DeleteFromAPITable(name, c[i]) # will error so if it does that means it doesnt exist thus continue
-    #     except Exception:
-    #         pass
-
-    #     InsertIntoAPITable(name, c[i])
-    #     if(int(c[i][2]) > 0):
-    #         regester += c[i]  
-
     return inStockRegister
+
     # if any stock are at a values other than 0 send the reminder
 
 ## this code makes the call go out once every day    
-# from apscheduler.schedulers.blocking import BlockingScheduler
-# scheduler = BlockingScheduler()
-# scheduler.add_job(main_call_frame(['']), 'interval', hours=24)
-# scheduler.start()
-
-
+from apscheduler.schedulers.blocking import BlockingScheduler
+scheduler = BlockingScheduler(timezone='MST')
+scheduler.add_job(main_call_frame, 'interval', minutes=20)
+scheduler.start()
 
 
 ######################Used to initialize api data tables###############################
@@ -667,17 +623,3 @@ def main_call_frame():
 #     InsertIntoAPITable("neweggapi", gpuData)
 
 #######################################################################################
-
-# gpuData = bestbuyAPI(6467840);
-# email_send("daviddk226", gpuData)
-
-# liststock = main_call_frame()
-# print(liststock)
-
-#gpuInfo = ['NVIDIA' , '399', '1', 'URL', 'Image']
-#addUserTracking('daviddk226@gmail.com', gpuInfo)
-#removeUserTracking('daviddk226@gmail.com', gpuInfo)
-
-#retrieveTrackingList('daviddk226@gmail.com')
-
-main_call_frame()
