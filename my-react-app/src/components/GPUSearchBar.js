@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useEffect } from 'react';
 import Checkbox from '@mui/material/Checkbox';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
@@ -8,68 +8,39 @@ import CheckBoxIcon from '@mui/icons-material/CheckBox';
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
 const checkedIcon = <CheckBoxIcon fontSize="small" />;
 
+
+
 export default function GPUSearchBar() {
 
+  const [gpus, setGpus] = React.useState([]);
+
   const handleSubmit = async (event) => {
-    //Prevent page reload
-    event.preventDefault();
 
-    // var { uname, pass } = document.forms[0];
-
-    // Find user login info
-    // const userData = database.find((user) => user.username === uname.value);
-    const Search = "ASUS";
-
-    const response = await fetch ('/Searching',{
+    const response = await fetch ('/print_api_results',{
       method: 'POST',
       header:{
         'Accept': 'application/json',
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({Search: Search})
-    });
-
-    console.log(response);
+    }).then(function (response) {
+      return response.json();
+    }).then(function (json) {
+      setGpus(json);
+    })
   };
 
-  const handleChange = (event) => {
-    // if (event.selected == "true" ){
-    //   console.log(event.key);
-    // }
-    //console.log(event.aria-selected);
-    
-  };
+  useEffect(() => {
+    handleSubmit();
+  }, []);
+
 
   return (
     <Autocomplete
-      multiple
-      id="checkboxes-tags-demo"
-      options={GPUs}
-      disableCloseOnSelect
-      getOptionLabel={(option) => option.title}
-      renderOption={(props, option, { selected }) => (
-        <li {...props}>
-          <Checkbox
-            icon={icon}
-            checkedIcon={checkedIcon}
-            style={{ marginRight: 8 }}
-            checked={selected}
-            onChange={handleSubmit}
-          />
-          {option.title}
-        </li>
-      )}
-      style={{ width: 500 }}
-      renderInput={(params) => (
-        <TextField {...params} label="Search For GPUs in the DataBase" placeholder="Favorites" />
-      )}
+      disablePortal
+      id="combo-box-demo"
+      options={gpus}
+      sx={{ width: 1500 }}
+      renderInput={(params) => <TextField {...params} label="Search for GPUs in the Database" />}
     />
   );
 }
-
-const GPUs = [
-  { title: '2080', year: 1994 },
-  { title: '3060', year: 1972 },
-  { title: '3070', year: 1974 },
-  { title: '3090', year: 2008 },
-];
