@@ -583,9 +583,9 @@ def main_call_frame():
 
 
     #################API's are called to check stock of current GPUs in database#######################
-    inStockRegister += apiUpdateStock('bestbuyapi');
+    inStockRegister += apiUpdateStock('bestbuyapi')
     #inStockRegister += apiUpdateStock('amazonapi'); ### Disabled due to having a 5000/month limit so its not constantly running
-    inStockRegister+= apiUpdateStock('neweggapi');
+    inStockRegister+= apiUpdateStock('neweggapi')
 
     emaiList()
 
