@@ -47,11 +47,11 @@ const TrackingList = () => {
             if(gpus[i] == selectedGPU) {
                 delete gpus[i];
                 console.log(selectedGPU);
-                console.log("fuckkkkkkk")
             }
         }
         setSelectedGPU();
         console.log(gpus);
+        // window.location.reload(false);
 
       }
 

@@ -57,7 +57,7 @@ export default function GPUSearchBar() {
 
   const handleClick = () => {
     handleForward();
-    window.location.reload(false);
+    // window.location.reload(false);
   }
 
   return (
