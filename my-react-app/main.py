@@ -127,7 +127,7 @@ def print_api_results():
 
     print("Search Completed")
     final = json.dumps(dataList, indent=2)
-    print(final)
+    #print(final)
     return final
 
 @app.route('/print_tracker_list')
@@ -278,29 +278,33 @@ def update_users():
 
 
 @app.route('/addUserTracking',methods=['POST'])
-def addUserTracking(userEmail, gpuInfo):
-    email = userEmail
-    gpu = gpuInfo
+def addUserTracking():
+    email = user_email_account
 
-    ############### uncomment for FLASK ###################
-    # email = ''
-    # gpu = ''
+    gpu=[]
+    if request.method == 'POST':
+       data = json.loads(request.data)
+       #print(data)
+       gpu.append(data['selectedGPU']['label'])
+       gpu.append(data['selectedGPU']['price']) 
+       gpu.append(data['selectedGPU']['stock']) 
+       gpu.append(data['selectedGPU']['url']) 
+       gpu.append(data['selectedGPU']['image']) 
+    #    gpu.append(data['selectedGPU']['item number']) 
+       print(data)
 
-    # if request.method == 'POST':
-    #     data = json.loads(request.data)
-    #     email = data['Email']
-    #     gpu = data['Gpu']
-
-    dataExists = herokuRetrieveData("SELECT email, gpu_name FROM users WHERE email = " + "\'" + email + "\'" + "and gpu_name = " + "\'" + gpuInfo[0] + "\'" + ";")
+    dataExists = herokuRetrieveData("SELECT email, gpu_name FROM users WHERE email = " + "'" + email + "'" + "and gpu_name = " + "'" + gpu[0] + "'" + ";")
     print(dataExists)
 
     if len(dataExists) == 0:
 
-        HerokuExecutionSQL("INSERT INTO users VALUES(" + "\'"+ email + "\'," + "\'" + gpu[0] + "\'," + "\'" + gpu[1] + "\'," + "\'" + gpu[2] + "\'," + "\'" + gpu[3] + "\'," + "\'" + gpu[4] + "\'" + ");")
+        HerokuExecutionSQL("INSERT INTO users VALUES(" + "'"+ email + "'," + "'" + gpu[0] + "'," + "'" + gpu[1] + "'," + "'" + gpu[2] + "'," + "'" + gpu[3] + "'," + "'" + gpu[4] + "'" + ");")
         print("Updated User " + email + " tracking list with " + gpu[0])
 
     else:
-        print("Tracking for " + gpuInfo[0] + " for user " + email + " already in database")
+        print("Tracking for " + gpu[0] + " for user " + email + " already in database")
+
+    return data
 
 
 
@@ -567,11 +571,11 @@ def main_call_frame():
 
     # if any stock are at a values other than 0 send the reminder
 
-## this code makes the call go out once every day    
-from apscheduler.schedulers.blocking import BlockingScheduler
-scheduler = BlockingScheduler(timezone='MST')
-scheduler.add_job(main_call_frame, 'interval', minutes=20)
-scheduler.start()
+# ## this code makes the call go out once every day    
+# from apscheduler.schedulers.blocking import BlockingScheduler
+# scheduler = BlockingScheduler(timezone='MST')
+# scheduler.add_job(main_call_frame, 'interval', minutes=20)
+# scheduler.start()
 
 
 ######################Used to initialize api data tables###############################
