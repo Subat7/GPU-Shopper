@@ -371,7 +371,7 @@ def retrieveTrackingList():
 def apiUpdateStock(apiTable):
 
     apiData = herokuRetrieveData("Select * FROM " + apiTable + ";")
-    inStockRegister = [];
+    inStockRegister = []
 
     for i in apiData:
         if apiTable == 'bestbuyapi':
