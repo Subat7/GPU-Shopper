@@ -5,6 +5,8 @@ import Box from '@mui/material/Box';
 import { useAuth0 } from '@auth0/auth0-react';
 import HomePage from './components/HomePage';
 
+
+
 import "./App.css";
 
 function App() {
@@ -26,7 +28,7 @@ function App() {
   }
 
   if (isAuthenticated) {
-    return <HomePage />
+    return <HomePage />;
   }
   return <SignInSide /> ;
   

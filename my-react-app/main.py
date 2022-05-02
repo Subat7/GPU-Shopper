@@ -309,38 +309,55 @@ def addUserTracking():
 
 
 @app.route('/removeUserTracking',methods=['POST'])
-def removeUserTracking(userEmail, gpuInfo):
-    email = userEmail
-    gpu = gpuInfo
+def removeUserTracking():
+    email = user_email_account
+    gpu=[]
+    if request.method == 'POST':
+       data = json.loads(request.data)
+       #print(data)
+       gpu.append(data['selectedGPU']['label'])
+       gpu.append(data['selectedGPU']['price']) 
+    #    gpu.append(data['selectedGPU']['stock']) 
+    #    gpu.append(data['selectedGPU']['url']) 
+    #    gpu.append(data['selectedGPU']['image']) 
+    #    gpu.append(data['selectedGPU']['item number']) 
+       print(data)
 
-    ############### uncomment for FLASK ###################
-    # email = ''
-    # gpu = ''
-
-    # if request.method == 'POST':
-    #     data = json.loads(request.data)
-    #     email = data['Email']
-    #     gpu = data['Gpu']
-
-    dataExists = herokuRetrieveData("SELECT email, gpu_name FROM users WHERE email = " + "\'" + email + "\'" + "and gpu_name = " + "\'" + gpuInfo[0] + "\'" + ";")
+    dataExists = herokuRetrieveData("SELECT email, gpu_name FROM users WHERE email = " + "'" + email + "'" + "and gpu_name = " + "'" + gpu[0] + "'" + ";")
     print(dataExists)
 
     if len(dataExists) == 0:
 
-        print("Tracking for " + gpuInfo[0] + " for user " + email + " has already been removed")
+        print("Tracking for " + gpu[0] + " for user " + email + " has already been removed")
 
     else:
-        HerokuExecutionSQL("DELETE FROM users WHERE email = " + "\'" + email + "\'" + "and gpu_name = " + "\'" + gpuInfo[0] + "\'" + ";")
+        HerokuExecutionSQL("DELETE FROM users WHERE email = " + "'" + email + "'" + "and gpu_name = " + "'" + gpu[0] + "'" + " AND price = '"+gpu[1]+"';")
         print("Removed Users " + email + " tracking of " + gpu[0] + " from list" )
-
+    return "Done"
 
 @app.route('/retrieveTrackingList', methods=['POST'])
 def retrieveTrackingList():
 
-    #email = userEmail
+    sizeData = []
+    rowSize = 0
+    sizeData = herokuRetrieveData("SELECT  count(*) as row_size FROM users WHERE email = '"+user_email_account+"';")
+    rowSize += sizeData[0][0]
 
-    trackingList = herokuRetrieveData("SELECT * FROM users WHERE email = " + "\'" + email + "\'" + ";")
+    dataList = [{}] * rowSize
+    count = 0
 
+    results = herokuRetrieveData("SELECT * FROM users WHERE email = '"+user_email_account+"';")
+
+    for i in range(len(results)):
+        dictList = { 'label' : results[i][1], 'price': results[i][2], 'stock': results[i][3], 'url': results[i][4], 'image_url': results[i][5]} #leave out email
+        dataList[i+count] = dictList
+
+    count+= len(results)
+    #print(count)
+
+    print("Search Completed")
+    trackingList = json.dumps(dataList, indent=2)
+    print(trackingList)
     return trackingList
 
 

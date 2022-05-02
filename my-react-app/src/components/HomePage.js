@@ -1,7 +1,10 @@
 import React, { useEffect } from 'react';
+import { useAuth0 } from '@auth0/auth0-react';
 import ResponsiveAppBar from './ResponsiveAppBar';
 import GPUSearchBar from './GPUSearchBar';
-import { useAuth0 } from '@auth0/auth0-react';
+import TrackingList from './TrackingList';
+import {Route, Routes, Redirect} from 'react-router-dom'
+
 
 
 const HomePage = () => {
@@ -36,17 +39,13 @@ const HomePage = () => {
   return (
     <div>
       <ResponsiveAppBar />
-      <div
-        style={{
-          position: 'absolute', left: '50%', top: '50%',
-          transform: 'translate(-50%, -50%)'
-      }}
-      >
-        <GPUSearchBar />
-      </div>
-
+      <Routes>
+        <Route exact path="/" element={<GPUSearchBar />} />
+        <Route exact path="/Home" element={<GPUSearchBar />} />
+        <Route exact path="/TrackingList" element={<TrackingList />} />
+      </Routes>
     </div>
-  )
+  );
 }
 
 export default HomePage

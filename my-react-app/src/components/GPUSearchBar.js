@@ -22,6 +22,7 @@ export default function GPUSearchBar() {
 
   const [gpus, setGpus] = React.useState([]);
   const [selectedGPU, setSelectedGPU] = React.useState();
+  const [enteredText, setEnteredText] = React.useState([]);
 
   const handleSubmit = async (event) => {
 
@@ -56,10 +57,14 @@ export default function GPUSearchBar() {
 
   const handleClick = () => {
     handleForward();
+    window.location.reload(false);
   }
 
   return (
-    <div>
+    <div style={{
+      position: 'absolute', left: '50%', top: '50%',
+      transform: 'translate(-50%, -50%)'
+  }}>
       <Stack direction="row" spacing={2}>
       <Autocomplete
             disablePortal

@@ -13,6 +13,8 @@ import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import Logo from '../photos/BOTNETLOGO.jpg';
 import { useAuth0 } from '@auth0/auth0-react';
+import { Link } from 'react-router-dom';
+
 
 const pages = ['Home', 'Tracking List'];
 
@@ -40,7 +42,7 @@ const ResponsiveAppBar = () => {
 
   const handleProfileClick = (event) => {
     setAnchorElUser(null);
-    console.log("Profile clicked")
+    console.log("Profile clicked");
   };
 
   const handleLogoutClick = (event) => {
@@ -48,6 +50,14 @@ const ResponsiveAppBar = () => {
     console.log("Logout clicked");
     logout();
   };
+
+  const handleHomePageClick = (event) => {
+    console.log("Homepage clicked");
+  }
+
+  const handleTrackingListClick = (event) => {
+    console.log("Tracking List clicked");
+  }
   
   return (
     <AppBar position="static">
@@ -108,15 +118,24 @@ const ResponsiveAppBar = () => {
             LOGO
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-            {pages.map((page) => (
+            <Link to="/Home">
               <Button
-                key={page}
-                onClick={handleCloseNavMenu}
+                // component={Link} to="./HomePage"
+                onClick={handleHomePageClick}
                 sx={{ my: 2, color: 'white', display: 'block' }}
               >
-                {page}
+                Home
               </Button>
-            ))}
+            </Link>
+            <Link to="/TrackingList">
+            <Button
+                onClick={handleTrackingListClick}
+                sx={{ my: 2, color: 'white', display: 'block' }}
+              >
+                My Tracking List
+              </Button>
+            </Link>
+              
           </Box>
 
           <Box sx={{ flexGrow: 0 }}>
