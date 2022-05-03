@@ -100,13 +100,14 @@ export default function GPUSearchBar() {
       <div style={{
       position: 'absolute', left: '50%', top: '50%',
       transform: 'translate(-50%, -50%)',
+      width: '80%'
   }}>
-      <Stack direction="row" spacing={2}>
+      <Stack direction="row" spacing={2} fullWidth={true}>
       <Autocomplete
             disablePortal
             id="combo-box-demo"
             options={gpus}
-            sx={{ width: 1000 }}
+            fullWidth={true}
             onChange={(event, value) => setSelectedGPU(value)} // prints the selected value
             renderInput={(params) => <TextField {...params} label={text2} />}
           />

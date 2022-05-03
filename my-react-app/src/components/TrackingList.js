@@ -70,15 +70,16 @@ const TrackingList = () => {
 
   return (
     <div style={{
-        position: 'absolute', left: '50%', top: '20%',
-        transform: 'translate(-50%, -50%)'
+        position: 'absolute', left: '50%', top: '30%',
+        transform: 'translate(-50%, -50%)',
+        width: '80%'
     }}>
         <Stack direction="row" spacing={2}>
         <Autocomplete
               disablePortal
               id="combo-box-demo"
               options={gpus}
-              sx={{ width: 1000 }}
+              fullWidth={true}
               onChange={(event, value) => setSelectedGPU(value)} // prints the selected value
               renderInput={(params) => <TextField {...params} label={text1} />}
             />

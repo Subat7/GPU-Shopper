@@ -111,7 +111,7 @@ const ResponsiveAppBar = () => {
           </Typography> */}
           <img src={Logo} alt="Logo"  width="60" height="60"/>
 
-          <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
+          <Box sx={{ flexGrow: 1, display: { md: 'flex' } }}>
             <IconButton
               size="large"
               aria-label="account of current user"
@@ -155,7 +155,7 @@ const ResponsiveAppBar = () => {
           >
             LOGO
           </Typography> */}
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+          <Box sx={{flexGrow:1 ,display: { md: 'flex' } }}>
             <Link to="/Home">
               <Button
                 // component={Link} to="./HomePage"
@@ -176,10 +176,9 @@ const ResponsiveAppBar = () => {
             <Button  sx={{ my: 2, color: 'white', display: 'block' }} onClick={handleTranslate}>
               {text3}
             </Button>
-
           </Box>
 
-          <Box sx={{ flexGrow: 0 }}>
+          <Box sx={{ flexGrow: 1 }}>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                 <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
