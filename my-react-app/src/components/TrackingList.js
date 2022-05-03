@@ -9,6 +9,8 @@ const TrackingList = () => {
 
     const [gpus, setGpus] = React.useState([]);
     const [selectedGPU, setSelectedGPU] = React.useState();
+    const [text1, setText1] = React.useState();
+    const [text2, setText2] = React.useState();
 
     const handleSubmit = async (event) => {
 
@@ -38,6 +40,17 @@ const TrackingList = () => {
     };
 
     useEffect(() => {
+      console.log(localStorage.getItem("lan"));
+      if (localStorage.getItem("lan") == null) {
+        setText1("Search for GPUs in your Tracking List")
+        setText2("Remove From Tracking List")
+      } else if (localStorage.getItem('lan') == "sp") {
+        setText1("Buscar gpus en la lista de seguimiento")
+        setText2("Eliminar de la lista de seguimiento")
+      } else { 
+        setText1("Search for GPUs in your Tracking List")
+        setText2("Remove From Tracking List")
+      }
         handleSubmit();
     }, []);
 
@@ -67,11 +80,12 @@ const TrackingList = () => {
               options={gpus}
               sx={{ width: 1000 }}
               onChange={(event, value) => setSelectedGPU(value)} // prints the selected value
-              renderInput={(params) => <TextField {...params} label="Search for GPUs in your Tracking List" />}
+              renderInput={(params) => <TextField {...params} label={text1} />}
             />
         <Button variant="contained" endIcon={<SendIcon sx="auto"/>}
            onClick={handleClick}>
-            Remove From Tracking List
+             {text2}
+            
         </Button>
       </Stack>
       </div>

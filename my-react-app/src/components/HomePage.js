@@ -3,7 +3,11 @@ import { useAuth0 } from '@auth0/auth0-react';
 import ResponsiveAppBar from './ResponsiveAppBar';
 import GPUSearchBar from './GPUSearchBar';
 import TrackingList from './TrackingList';
-import {Route, Routes, Redirect} from 'react-router-dom';
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+} from "react-router-dom";
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 
@@ -53,8 +57,8 @@ const HomePage = () => {
         <Route exact path="/" element={<GPUSearchBar />} />
         <Route exact path="/Home" element={<GPUSearchBar />} />
         <Route exact path="/TrackingList" element={<TrackingList />} />
-        
       </Routes>
+      
     </div>
     // </ThemeProvider>
     
