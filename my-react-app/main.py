@@ -14,6 +14,7 @@ from email import encoders
 from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import time
  
 api_names = ["neweggapi","bestbuyapi","amazonapi"]
 inStockRegister = []
@@ -160,11 +161,11 @@ def jprint(obj):
 def HerokuExecutionSQL(Input):
     HEROKU_APP_NAME = "botproject-csce315"
     # connection and execution
-    conn_info = subprocess.run(["heroku", "config:get", "DATABASE_URL", "-a", HEROKU_APP_NAME], stdout = subprocess.PIPE)
-    connuri = conn_info.stdout.decode('utf-8').strip()
-    conn = psycopg2.connect(connuri)
-    # DATABASE_URL = os.environ['DATABASE_URL']
-    # conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+    # conn_info = subprocess.run(["heroku", "config:get", "DATABASE_URL", "-a", HEROKU_APP_NAME], stdout = subprocess.PIPE)
+    # connuri = conn_info.stdout.decode('utf-8').strip()
+    # conn = psycopg2.connect(connuri)
+    DATABASE_URL = os.environ['DATABASE_URL']
+    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 
     cursor = conn.cursor()
     cursor.execute(Input)
@@ -176,11 +177,11 @@ def herokuRetrieveData(command):
         ## access table and return users table list[tuple[4], tuple [4]]
         HEROKU_APP_NAME = "botproject-csce315"
         # connection and execution
-        conn_info = subprocess.run(["heroku", "config:get", "DATABASE_URL", "-a", HEROKU_APP_NAME], stdout = subprocess.PIPE)
-        connuri = conn_info.stdout.decode('utf-8').strip()
-        conn = psycopg2.connect(connuri)
-        # DATABASE_URL = os.environ['DATABASE_URL']
-        # conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+        # conn_info = subprocess.run(["heroku", "config:get", "DATABASE_URL", "-a", HEROKU_APP_NAME], stdout = subprocess.PIPE)
+        # connuri = conn_info.stdout.decode('utf-8').strip()
+        # conn = psycopg2.connect(connuri)
+        DATABASE_URL = os.environ['DATABASE_URL']
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 
         cursor = conn.cursor()
         cursor.execute(command)
@@ -198,6 +199,9 @@ def email_send(Username, Info):
 #Password: BotNetisCool1234
     EMAIL_ADDRESS = 'BotNetGPUs@gmail.com'
     EMAIL_PASSWORD = 'BotNetisCool1234'
+
+    print("Within email send")
+    #print(Info)
 
     #msg = EmailMessage()
     msg = MIMEMultipart("alternative")
@@ -248,14 +252,28 @@ def emaiList():
 
     for i in userList:
         inStockUserList = []
-
         for j in trackingList:
+            flag = False
 
             if i[0] == j[0]:
 
                 for k in inStockRegister:
-                    if k[0] == j[1]:
+                    #print("Comparing " + k[0] + " with " + j[1])
+                    if k[0] == j[1] and j[3] == '0': #checking if gpu names equal to the instock register and what is in the tracking list as well as if the stock is 0 meaning the user hasnt been emailed
+                        #GPUS added to email list are set to 1 for stock to signify the person has been emailed for this GPU already and not to repeat
+                        HerokuExecutionSQL("UPDATE users" + " SET stock = " + '\'' + "1" + '\'' + " WHERE email = " + '\'' + i[0] + '\''+" and gpu_name = " + '\'' + j[1] + '\''+ ";") 
                         inStockUserList.append(k)
+                        flag = True
+                        break
+                    elif k[0] == j[1] and j[3] == '1':
+                        flag = True
+                        print("Email already sent before")
+                        break
+            
+                if flag == False and j[3] == '1':
+                    HerokuExecutionSQL("UPDATE users" + " SET stock = " + '\'' + "0" + '\'' + " WHERE email = " + '\'' + i[0] + '\''+" and gpu_name = " + '\'' + j[1] + '\''+ ";") 
+        
+
 
         #print(inStockUserList)
         if len(inStockUserList) != 0:
@@ -296,14 +314,14 @@ def addUserTracking():
        gpu.append(data['selectedGPU']['url']) 
        gpu.append(data['selectedGPU']['image']) 
     #    gpu.append(data['selectedGPU']['item number']) 
-       print(data)
+       #print(data)
 
     dataExists = herokuRetrieveData("SELECT email, gpu_name FROM users WHERE email = " + "'" + email + "'" + "and gpu_name = " + "'" + gpu[0] + "'" + ";")
-    print(dataExists)
+    #print(dataExists)
 
     if len(dataExists) == 0:
 
-        HerokuExecutionSQL("INSERT INTO users VALUES(" + "'"+ email + "'," + "'" + gpu[0] + "'," + "'" + gpu[1] + "'," + "'" + gpu[2] + "'," + "'" + gpu[3] + "'," + "'" + gpu[4] + "'" + ");")
+        HerokuExecutionSQL("INSERT INTO users VALUES(" + "'"+ email + "'," + "'" + gpu[0] + "'," + "'" + gpu[1] + "'," + "'" + "0" + "'," + "'" + gpu[3] + "'," + "'" + gpu[4] + "'" + ");")
         print("Updated User " + email + " tracking list with " + gpu[0])
 
     else:
@@ -326,10 +344,10 @@ def removeUserTracking():
     #    gpu.append(data['selectedGPU']['url']) 
     #    gpu.append(data['selectedGPU']['image']) 
     #    gpu.append(data['selectedGPU']['item number']) 
-       print(data)
+       #print(data)
 
     dataExists = herokuRetrieveData("SELECT email, gpu_name FROM users WHERE email = " + "'" + email + "'" + "and gpu_name = " + "'" + gpu[0] + "'" + ";")
-    print(dataExists)
+    #print(dataExists)
 
     if len(dataExists) == 0:
 
@@ -360,9 +378,9 @@ def retrieveTrackingList():
     count+= len(results)
     #print(count)
 
-    print("Search Completed")
+    #print("Search Completed")
     trackingList = json.dumps(dataList, indent=2)
-    print(trackingList)
+    #print(trackingList)
     return trackingList
 
 
@@ -504,6 +522,7 @@ def neweggAPI():
 def bestbuyAPI(sku):
     #print("Running Best Buy Api")
 
+    time.sleep(0.3)
     url = "https://api.bestbuy.com/v1/products/" + str(sku) + ".json?apiKey=qhqws47nyvgze2mq3qx4jadt&show=sku,name,salePrice,onlineAvailability,image,url" #<----- Change SKU to request details for specifc GPU : /products/SKU
 
     response = requests.request("GET", url)
@@ -581,6 +600,8 @@ def main_call_frame():
     print("API LIST CALLED " + api_names[0] + " " + api_names[1] + " " + api_names[2])
     global inStockRegister
 
+    inStockRegister = []
+
 
     #################API's are called to check stock of current GPUs in database#######################
     inStockRegister += apiUpdateStock('bestbuyapi')
@@ -596,7 +617,7 @@ def main_call_frame():
 # ## this code makes the call go out once every day    
 # from apscheduler.schedulers.blocking import BlockingScheduler
 # scheduler = BlockingScheduler(timezone='MST')
-# scheduler.add_job(main_call_frame, 'interval', minutes=20)
+# scheduler.add_job(main_call_frame, 'interval', seconds=30)
 # scheduler.start()
 
 
