@@ -17,7 +17,7 @@ import { Link } from 'react-router-dom';
 import DarkModeToggle from "react-dark-mode-toggle";
 
 
-const pages = ['Home', 'Tracking List'];
+// const pages = ['Home', 'Tracking List'];
 
 const ResponsiveAppBar = () => {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
@@ -111,7 +111,7 @@ const ResponsiveAppBar = () => {
           </Typography> */}
           <img src={Logo} alt="Logo"  width="60" height="60"/>
 
-          <Box sx={{ flexGrow: 1, display: { md: 'flex' } }}>
+          <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
             <IconButton
               size="large"
               aria-label="account of current user"
@@ -140,11 +140,11 @@ const ResponsiveAppBar = () => {
                 display: { xs: 'block', md: 'none' },
               }}
             >
-              {pages.map((page) => (
+              {/* {pages.map((page) => (
                 <MenuItem key={page} onClick={handleCloseNavMenu}>
                   <Typography textAlign="center">{page}</Typography>
                 </MenuItem>
-              ))}
+              ))} */}
             </Menu>
           </Box>
           {/* <Typography
@@ -155,7 +155,7 @@ const ResponsiveAppBar = () => {
           >
             LOGO
           </Typography> */}
-          <Box sx={{flexGrow:1 ,display: { md: 'flex' } }}>
+          <Box sx={{ flexGrow: 1, display: { md: 'flex' } }}>
             <Link to="/Home">
               <Button
                 // component={Link} to="./HomePage"
@@ -176,9 +176,10 @@ const ResponsiveAppBar = () => {
             <Button  sx={{ my: 2, color: 'white', display: 'block' }} onClick={handleTranslate}>
               {text3}
             </Button>
+
           </Box>
 
-          <Box sx={{ flexGrow: 1 }}>
+          <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                 <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
