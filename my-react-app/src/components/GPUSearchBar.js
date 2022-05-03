@@ -12,17 +12,41 @@ import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import CircularProgress from '@mui/material/CircularProgress';
+import { createTheme, ThemeProvider, useTheme } from '@mui/material/styles';
+
 
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
 const checkedIcon = <CheckBoxIcon fontSize="small" />;
 
 
 
+
+
 export default function GPUSearchBar() {
+
+  
 
   const [gpus, setGpus] = React.useState([]);
   const [selectedGPU, setSelectedGPU] = React.useState();
   const [enteredText, setEnteredText] = React.useState([]);
+  const [text1, setText1] = React.useState();
+  const [text2, setText2] = React.useState();
+
+  
+
+  // if (localStorage.getItem("lan") != "en") {
+  //   setText1('Add to Tracking List')
+  // } else {
+  //   setText1('Agregar a la lista de seguimiento')
+  // }
+
+  
+
+  const myTheme = createTheme({
+    palette: {
+      mode: 'light',
+    },
+  });
 
   const handleSubmit = async (event) => {
 
@@ -52,6 +76,17 @@ export default function GPUSearchBar() {
   };
 
   useEffect(() => {
+    console.log(localStorage.getItem("lan"));
+    if (localStorage.getItem("lan") == null) {
+      setText1("Add To Tracking List")
+      setText2("Search for GPUs in the Database")
+    } else if (localStorage.getItem('lan') == "sp") {
+      setText1("Agregar a la lista de seguimiento")
+      setText2(" Buscar GPU en la base de datos")
+    } else { 
+      setText1("Add to Tracking List")
+      setText2("Search for GPUs in the Database")
+    }
     handleSubmit();
   }, []);
 
@@ -61,9 +96,10 @@ export default function GPUSearchBar() {
   }
 
   return (
-    <div style={{
+    <ThemeProvider theme={myTheme}>
+      <div style={{
       position: 'absolute', left: '50%', top: '50%',
-      transform: 'translate(-50%, -50%)'
+      transform: 'translate(-50%, -50%)',
   }}>
       <Stack direction="row" spacing={2}>
       <Autocomplete
@@ -72,14 +108,16 @@ export default function GPUSearchBar() {
             options={gpus}
             sx={{ width: 1000 }}
             onChange={(event, value) => setSelectedGPU(value)} // prints the selected value
-            renderInput={(params) => <TextField {...params} label="Search for GPUs in the Database" />}
+            renderInput={(params) => <TextField {...params} label={text2} />}
           />
       <Button variant="contained" endIcon={<SendIcon sx="auto"/>}
          onClick={handleClick}>
-          Add to Tracking List
+           {text1}
       </Button>
     </Stack>
     </div>
+    </ThemeProvider>
+    
     
     
   );

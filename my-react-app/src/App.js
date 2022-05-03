@@ -1,9 +1,13 @@
-import React from "react";
+import React, { useEffect } from 'react';
 import SignInSide from './components/LoginPage';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import { useAuth0 } from '@auth0/auth0-react';
 import HomePage from './components/HomePage';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { keepTheme } from "./theme";
+
+
 
 
 
@@ -12,6 +16,8 @@ import "./App.css";
 function App() {
 
   const { isAuthenticated, isLoading } = useAuth0();
+
+ 
 
   if (isLoading) {
     return (
@@ -28,7 +34,12 @@ function App() {
   }
 
   if (isAuthenticated) {
-    return <HomePage />;
+    return (
+      <div>
+        <HomePage />
+      </div>
+    
+    );
   }
   return <SignInSide /> ;
   

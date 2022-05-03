@@ -3,12 +3,19 @@ import { useAuth0 } from '@auth0/auth0-react';
 import ResponsiveAppBar from './ResponsiveAppBar';
 import GPUSearchBar from './GPUSearchBar';
 import TrackingList from './TrackingList';
-import {Route, Routes, Redirect} from 'react-router-dom'
+import {Route, Routes, Redirect} from 'react-router-dom';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 
 
 const HomePage = () => {
   const { user } = useAuth0();
+
+  const myTheme = createTheme({
+    palette: {
+    },
+  });
+
 
   const handleSubmit = async (event) => {
     //Prevent page reload
@@ -33,18 +40,24 @@ const HomePage = () => {
   };
 
   useEffect(() => {
+    // localStorage.setItem("lan","en");
     handleSubmit();
   }, []);
 
   return (
-    <div>
+    // <ThemeProvider theme={myTheme}>
+      <div>
+        
       <ResponsiveAppBar />
       <Routes>
         <Route exact path="/" element={<GPUSearchBar />} />
         <Route exact path="/Home" element={<GPUSearchBar />} />
         <Route exact path="/TrackingList" element={<TrackingList />} />
+        
       </Routes>
     </div>
+    // </ThemeProvider>
+    
   );
 }
 
