@@ -162,11 +162,11 @@ def jprint(obj):
 def HerokuExecutionSQL(Input):
     HEROKU_APP_NAME = "botproject-csce315"
     # connection and execution
-    conn_info = subprocess.run(["heroku", "config:get", "DATABASE_URL", "-a", HEROKU_APP_NAME], stdout = subprocess.PIPE)
-    connuri = conn_info.stdout.decode('utf-8').strip()
-    conn = psycopg2.connect(connuri)
-    # DATABASE_URL = os.environ['DATABASE_URL']
-    # conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+    # conn_info = subprocess.run(["heroku", "config:get", "DATABASE_URL", "-a", HEROKU_APP_NAME], stdout = subprocess.PIPE)
+    # connuri = conn_info.stdout.decode('utf-8').strip()
+    # conn = psycopg2.connect(connuri)
+    DATABASE_URL = os.environ['DATABASE_URL']
+    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 
     cursor = conn.cursor()
     cursor.execute(Input)
@@ -178,11 +178,11 @@ def herokuRetrieveData(command):
         ## access table and return users table list[tuple[4], tuple [4]]
         HEROKU_APP_NAME = "botproject-csce315"
         # connection and execution
-        conn_info = subprocess.run(["heroku", "config:get", "DATABASE_URL", "-a", HEROKU_APP_NAME], stdout = subprocess.PIPE)
-        connuri = conn_info.stdout.decode('utf-8').strip()
-        conn = psycopg2.connect(connuri)
-        # DATABASE_URL = os.environ['DATABASE_URL']
-        # conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+        # conn_info = subprocess.run(["heroku", "config:get", "DATABASE_URL", "-a", HEROKU_APP_NAME], stdout = subprocess.PIPE)
+        # connuri = conn_info.stdout.decode('utf-8').strip()
+        # conn = psycopg2.connect(connuri)
+        DATABASE_URL = os.environ['DATABASE_URL']
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 
         cursor = conn.cursor()
         cursor.execute(command)
@@ -606,7 +606,7 @@ def main_call_frame():
 
     #################API's are called to check stock of current GPUs in database#######################
     inStockRegister += apiUpdateStock('bestbuyapi')
-    #inStockRegister += apiUpdateStock('amazonapi'); ### Disabled due to having a 5000/month limit so its not constantly running
+    inStockRegister += apiUpdateStock('amazonapi'); ### Disabled due to having a 5000/month limit so its not constantly running
     inStockRegister+= apiUpdateStock('neweggapi')
 
     emailList()
