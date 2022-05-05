@@ -13,6 +13,7 @@ import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import CircularProgress from '@mui/material/CircularProgress';
 import { createTheme, ThemeProvider, useTheme } from '@mui/material/styles';
+import { useAuth0 } from '@auth0/auth0-react';
 
 
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
@@ -31,6 +32,7 @@ export default function GPUSearchBar() {
   const [enteredText, setEnteredText] = React.useState([]);
   const [text1, setText1] = React.useState();
   const [text2, setText2] = React.useState();
+  const { user } = useAuth0();
 
   
 
@@ -64,6 +66,17 @@ export default function GPUSearchBar() {
   };
 
   const handleForward = async (event) => {
+    const user_email = user.email;
+    
+    const response1 = await fetch ('/update_users',{
+      method: 'POST',
+      header:{
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({UserEmail:user_email})
+    });
+
 
     const response = await fetch ('/addUserTracking',{
       method: 'POST',
@@ -72,7 +85,10 @@ export default function GPUSearchBar() {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({selectedGPU})
+
+
     });
+
   };
 
   useEffect(() => {
