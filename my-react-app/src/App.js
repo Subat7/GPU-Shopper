@@ -6,6 +6,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import HomePage from './components/HomePage';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { keepTheme } from "./theme";
+import background from './photos/login.jpg';
 
 
 
@@ -35,10 +36,7 @@ function App() {
 
   if (isAuthenticated) {
     return (
-      <div>
         <HomePage />
-      </div>
-    
     );
   }
   return <SignInSide /> ;

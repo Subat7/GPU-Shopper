@@ -5,6 +5,9 @@ import Autocomplete from '@mui/material/Autocomplete';
 import SendIcon from '@mui/icons-material/Send';
 import Button from '@mui/material/Button';
 import { useAuth0 } from '@auth0/auth0-react';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
+import { createTheme, ThemeProvider, useTheme } from '@mui/material/styles';
 
 const TrackingList = () => {
 
@@ -12,7 +15,24 @@ const TrackingList = () => {
     const [selectedGPU, setSelectedGPU] = React.useState();
     const [text1, setText1] = React.useState();
     const [text2, setText2] = React.useState();
+    const [open, setOpen] = React.useState(false);
     const { user } = useAuth0();
+    const [text3, setText3] = React.useState();
+    const [text4, setText4] = React.useState();
+
+    const myTheme = createTheme({
+      palette: {
+        mode: 'light',
+      },
+    });
+
+    const Alert = React.forwardRef(function Alert(props, ref) {
+      return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+    });
+
+    const handleClose = () => {
+      setOpen(false);
+    }
 
     const handleSubmit = async (event) => {
 
@@ -68,17 +88,24 @@ const TrackingList = () => {
       if (localStorage.getItem("lan") == null) {
         setText1("Search for GPUs in your Tracking List")
         setText2("Remove From Tracking List")
+        setText3("Success!")
+        setText4("Loading")
       } else if (localStorage.getItem('lan') == "sp") {
         setText1("Buscar gpus en la lista de seguimiento")
         setText2("Eliminar de la lista de seguimiento")
+        setText3("éxito")
+        setText4("cargando")
       } else { 
         setText1("Search for GPUs in your Tracking List")
         setText2("Remove From Tracking List")
+        setText3("Success!")
+        setText4("Loading")
       }
         handleSubmit();
     }, []);
 
     const handleClick = () => {
+        setOpen(true);
         handleForward();
         for (let i = 0; i < gpus.length; i++) {
             if(gpus[i] == selectedGPU) {
@@ -93,7 +120,15 @@ const TrackingList = () => {
       }
 
   return (
-    <div style={{
+    <ThemeProvider theme={myTheme}>
+      <div>
+      <Snackbar anchorOrigin={ {vertical: 'top', horizontal: 'center'}} open={open} autoHideDuration={3000} onClose={handleClose}>
+        <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
+          {text3}
+        </Alert>
+      </Snackbar>
+      </div>
+      <div style={{
         position: 'absolute', left: '50%', top: '50%',
         transform: 'translate(-50%, -50%)',
         width: '80%'
@@ -116,6 +151,8 @@ const TrackingList = () => {
         </Button>
       </Stack>
       </div>
+    </ThemeProvider>
+    
     
   )
 }

@@ -9,6 +9,9 @@ import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import { createTheme, ThemeProvider, useTheme } from '@mui/material/styles';
 import { useAuth0 } from '@auth0/auth0-react';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
+import background from '../photos/login.jpg';
 
 
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
@@ -28,6 +31,9 @@ export default function GPUSearchBar() {
   const [text1, setText1] = React.useState();
   const [text2, setText2] = React.useState();
   const { user } = useAuth0();
+  const [open, setOpen] = React.useState(false);
+  const [text3, setText3] = React.useState();
+  const [text4, setText4] = React.useState();
 
   
 
@@ -92,24 +98,47 @@ export default function GPUSearchBar() {
     if (localStorage.getItem("lan") == null) {
       setText1("Add To Tracking List")
       setText2("Search for GPUs in the Database")
+      setText3("Success!")
+      setText4("Loading")
     } else if (localStorage.getItem('lan') == "sp") {
       setText1("Agregar a la lista de seguimiento")
       setText2(" Buscar GPU en la base de datos")
+      setText3("éxito")
+      setText4("cargando")
     } else { 
       setText1("Add to Tracking List")
       setText2("Search for GPUs in the Database")
+      setText3("Success!")
+      setText4("Loading")
     }
     handleSubmit();
   }, []);
 
   const handleClick = () => {
-    console.log(gpus[0]['stock']);
+    const vertical = 'top';
+    const horizontal = 'center';
+    setOpen(true);
     handleForward();
     // window.location.reload(false);
   }
 
+  const handleClose = () => {
+    setOpen(false);
+  }
+
+  const Alert = React.forwardRef(function Alert(props, ref) {
+    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+  });
+ 
   return (
     <ThemeProvider theme={myTheme}>
+      <div>
+      <Snackbar anchorOrigin={ {vertical: 'top', horizontal: 'center'}} open={open} autoHideDuration={3000} onClose={handleClose}>
+        <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
+          {text3}
+        </Alert>
+      </Snackbar>
+      </div>
       <div style={{
       position: 'absolute', left: '50%', top: '50%',
       transform: 'translate(-50%, -50%)',
@@ -118,7 +147,7 @@ export default function GPUSearchBar() {
       <Stack direction="row" spacing={2} fullWidth={true}>
       <Autocomplete
             clearOnEscape={true}
-            noOptionsText="Loading"
+            noOptionsText={text4}
             disablePortal
             id="combo-box-demo"
             options={gpus}
@@ -147,6 +176,7 @@ export default function GPUSearchBar() {
          onClick={handleClick}>
            {text1}
       </Button>
+      
     </Stack>
     </div>
     </ThemeProvider>

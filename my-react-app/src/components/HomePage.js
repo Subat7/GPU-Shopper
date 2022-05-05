@@ -17,6 +17,7 @@ const HomePage = () => {
 
   const myTheme = createTheme({
     palette: {
+
     },
   });
 
@@ -49,8 +50,8 @@ const HomePage = () => {
   }, []);
 
   return (
-    // <ThemeProvider theme={myTheme}>
-      <div>
+    <ThemeProvider theme={myTheme}>
+      <div >
         
       <ResponsiveAppBar />
       <Routes>
@@ -60,7 +61,7 @@ const HomePage = () => {
       </Routes>
       
     </div>
-    // </ThemeProvider>
+    </ThemeProvider>
     
   );
 }

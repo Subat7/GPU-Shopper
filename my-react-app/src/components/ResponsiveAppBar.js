@@ -174,13 +174,15 @@ const ResponsiveAppBar = () => {
                 {text2}
               </Button>
             </Link>
-            <Button  sx={{ my: 2, color: 'white', display: 'block' }} onClick={handleTranslate}>
+            {/* <Button  sx={{ my: 2, color: 'white', display: 'block' }} onClick={handleTranslate}>
               {text3}
-            </Button>
-
+            </Button> */}
           </Box>
 
           <Box sx={{ flexGrow: 0 }}>
+            <Button  sx={{ my: 2, color: 'white', display: 'inline',marginRight: 1 }} onClick={handleTranslate}>
+              {text3}
+            </Button>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                 <Avatar alt="Remy Sharp" src={ProfilePic} />
