@@ -123,7 +123,7 @@ export default function GPUSearchBar() {
             id="combo-box-demo"
             options={gpus}
             renderOption={(props, option) => {
-              const {label, stock} = option;
+              const {label, stock, price} = option;
               let color;
               if (stock == '0') {
                 console.log("here")
@@ -133,7 +133,9 @@ export default function GPUSearchBar() {
               }
               return (
                 <span {...props} style={{ backgroundColor: color }}>
-                  {label}
+                  {label + "    "}
+                   - 
+                  {"       " + price}
                 </span>
               );
             }}
