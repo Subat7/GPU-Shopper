@@ -100,6 +100,8 @@ const TrackingList = () => {
     }}>
         <Stack direction="row" spacing={2}>
         <Autocomplete
+              clearOnEscape={true}
+              noOptionsText="Loading"
               disablePortal
               id="combo-box-demo"
               options={gpus}

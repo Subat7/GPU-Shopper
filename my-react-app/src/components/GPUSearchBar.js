@@ -6,12 +6,7 @@ import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import SendIcon from '@mui/icons-material/Send';
 import Button from '@mui/material/Button';
-import { styled } from '@mui/material/styles';
-import Box from '@mui/material/Box';
-import Paper from '@mui/material/Paper';
-import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
-import CircularProgress from '@mui/material/CircularProgress';
 import { createTheme, ThemeProvider, useTheme } from '@mui/material/styles';
 import { useAuth0 } from '@auth0/auth0-react';
 
@@ -61,6 +56,7 @@ export default function GPUSearchBar() {
     }).then(function (response) {
       return response.json();
     }).then(function (json) {
+      console.log(json)
       setGpus(json);
     })
   };
@@ -107,6 +103,7 @@ export default function GPUSearchBar() {
   }, []);
 
   const handleClick = () => {
+    console.log(gpus[0]['stock']);
     handleForward();
     // window.location.reload(false);
   }
@@ -116,16 +113,33 @@ export default function GPUSearchBar() {
       <div style={{
       position: 'absolute', left: '50%', top: '50%',
       transform: 'translate(-50%, -50%)',
-      width: '80%'
+      width: '80%',
   }}>
       <Stack direction="row" spacing={2} fullWidth={true}>
       <Autocomplete
+            clearOnEscape={true}
+            noOptionsText="Loading"
             disablePortal
             id="combo-box-demo"
             options={gpus}
+            renderOption={(props, option) => {
+              const {label, stock} = option;
+              let color;
+              if (stock == '0') {
+                console.log("here")
+                color = "pink"
+              } else {
+                color = '#C7FFC7'
+              }
+              return (
+                <span {...props} style={{ backgroundColor: color }}>
+                  {label}
+                </span>
+              );
+            }}
             fullWidth={true}
             onChange={(event, value) => setSelectedGPU(value)} // prints the selected value
-            renderInput={(params) => <TextField {...params} label={text2} />}
+            renderInput={(params) => <TextField sx={{color: 'green'}} {...params} label={text2} />}
           />
       <Button variant="contained" endIcon={<SendIcon sx="auto"/>}
          onClick={handleClick}>

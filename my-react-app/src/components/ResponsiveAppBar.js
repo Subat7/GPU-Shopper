@@ -15,6 +15,7 @@ import Logo from '../photos/BOTNETLOGO.jpg';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Link } from 'react-router-dom';
 import DarkModeToggle from "react-dark-mode-toggle";
+import ProfilePic from '../photos/alex.jpg';
 
 
 // const pages = ['Home', 'Tracking List'];
@@ -120,7 +121,6 @@ const ResponsiveAppBar = () => {
               onClick={handleOpenNavMenu}
               color="inherit"
             >
-              <MenuIcon />
             </IconButton>
             <Menu
               id="menu-appbar"
@@ -156,16 +156,17 @@ const ResponsiveAppBar = () => {
             LOGO
           </Typography> */}
           <Box sx={{ flexGrow: 1, display: { md: 'flex' } }}>
-            <Link to="/Home">
+            <Link to="/Home" style={{ textDecoration: 'none' }}>
               <Button
                 // component={Link} to="./HomePage"
                 onClick={handleHomePageClick}
                 sx={{ my: 2, color: 'white', display: 'block' }}
               >
+
                 {text1}
               </Button>
             </Link>
-            <Link to="/TrackingList">
+            <Link to="/TrackingList"style={{ textDecoration: 'none' }}>
             <Button
                 onClick={handleTrackingListClick}
                 sx={{ my: 2, color: 'white', display: 'block' }}
@@ -182,7 +183,7 @@ const ResponsiveAppBar = () => {
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
+                <Avatar alt="Remy Sharp" src={ProfilePic} />
               </IconButton>
             </Tooltip>
             <Menu
